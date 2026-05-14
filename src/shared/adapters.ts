@@ -27,9 +27,13 @@ export interface SiteAdapter {
 // Workday inputs typically carry `data-automation-id` such as
 // "legalName--firstName", "email", "phoneNumber--phoneNumber", "city".
 const workdayMap: Array<[RegExp, string]> = [
+  [/middleName/i, 'middle name'],
+  [/preferredName/i, 'preferred name'],
   [/firstName|givenName/i, 'first name given name'],
   [/lastName|familyName/i, 'last name family name surname'],
   [/email/i, 'email'],
+  [/countryPhoneCode|phoneCode|dialCode/i, 'phone country code dial code'],
+  [/phoneExtension|extension/i, 'phone extension'],
   [/phone/i, 'phone tel'],
   [/addressLine1|address1|streetAddress/i, 'address line 1 street address'],
   [/addressLine2|address2/i, 'address line 2'],
@@ -45,10 +49,15 @@ const workdayAdapter: SiteAdapter = {
   id: 'workday',
   matches: (h) => /myworkdayjobs\.com$/i.test(h) || /workday\.com$/i.test(h),
   hintFor(el) {
-    const aid = el.getAttribute('data-automation-id') ?? '';
-    if (!aid) return null;
+    // Workday surfaces field semantics via several attrs; check all of them.
+    const signals = [
+      el.getAttribute('data-automation-id') ?? '',
+      el.getAttribute('id') ?? '',
+      el.getAttribute('name') ?? ''
+    ].join(' ');
+    if (!signals.trim()) return null;
     for (const [re, hint] of workdayMap) {
-      if (re.test(aid)) return { extraLabel: hint };
+      if (re.test(signals)) return { extraLabel: hint };
     }
     return null;
   }
@@ -122,12 +131,37 @@ const icimsAdapter: SiteAdapter = {
   }
 };
 
+// ---------- Ashby ----------
+// Ashby (jobs.ashbyhq.com) uses `name="_systemfield_name"`, `_systemfield_email`,
+// `_systemfield_resume`, `_systemfield_phoneNumber`, `_systemfield_location`,
+// `_systemfield_linkedinUrl`, `_systemfield_githubUrl`, `_systemfield_websiteUrl`.
+// Custom questions use `_userfield_*` with the question text in a sibling label.
+const ashbyAdapter: SiteAdapter = {
+  id: 'ashby',
+  matches: (h) => /ashbyhq\.com$/i.test(h),
+  hintFor(el) {
+    const name = (el.getAttribute('name') || '').toLowerCase();
+    if (!name.startsWith('_systemfield')) return null;
+    const key = name.replace(/^_systemfield_?/, '');
+    if (key === 'name') return { extraLabel: 'full name' };
+    if (key === 'email') return { extraLabel: 'email' };
+    if (key === 'phonenumber') return { extraLabel: 'phone' };
+    if (key === 'location') return { extraLabel: 'city location' };
+    if (key === 'linkedinurl') return { extraLabel: 'linkedin' };
+    if (key === 'githuburl') return { extraLabel: 'github' };
+    if (key === 'websiteurl') return { extraLabel: 'website portfolio' };
+    if (key === 'resume') return null; // file input, handled by attachResume
+    return null;
+  }
+};
+
 const ADAPTERS: SiteAdapter[] = [
   workdayAdapter,
   greenhouseAdapter,
   leverAdapter,
   linkedinAdapter,
-  icimsAdapter
+  icimsAdapter,
+  ashbyAdapter
 ];
 
 export function pickAdapter(hostname: string): SiteAdapter | null {

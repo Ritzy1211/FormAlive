@@ -232,7 +232,7 @@ async function handle(msg: RuntimeMessage): Promise<RuntimeResponse> {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.id) return { ok: false, error: 'No active tab.' };
       try {
-        await chrome.tabs.sendMessage(tab.id, { type: 'FILL_PAGE' });
+        await chrome.tabs.sendMessage(tab.id, { type: 'FILL_PAGE' }, { frameId: 0 });
         return { ok: true };
       } catch (e) {
         return { ok: false, error: 'Content script not ready on this page.' };
@@ -243,7 +243,7 @@ async function handle(msg: RuntimeMessage): Promise<RuntimeResponse> {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.id) return { ok: false, error: 'No active tab.' };
       try {
-        const data = await chrome.tabs.sendMessage(tab.id, { type: 'SCAN_REPORT' });
+        const data = await chrome.tabs.sendMessage(tab.id, { type: 'SCAN_REPORT' }, { frameId: 0 });
         return { ok: true, data };
       } catch (e) {
         return { ok: false, error: 'Content script not ready on this page.' };

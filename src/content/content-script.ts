@@ -224,13 +224,39 @@ function setNativeValue(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectE
   const proto = Object.getPrototypeOf(el);
   const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
   const baseSetter = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'value')?.set;
+
+  // Focus first — Workday/Ashby React inputs only commit values when the
+  // field was focused before input/change fired.
+  try {
+    el.focus({ preventScroll: true });
+  } catch {
+    /* ignore */
+  }
+
   if (setter && setter !== baseSetter) {
     setter.call(el, value);
   } else {
     el.value = value;
   }
-  el.dispatchEvent(new Event('input', { bubbles: true }));
+
+  // Use InputEvent so React's synthetic event system treats this like real
+  // typing (sets `nativeEvent.data`).
+  try {
+    el.dispatchEvent(
+      new InputEvent('input', { bubbles: true, inputType: 'insertReplacementText', data: value })
+    );
+  } catch {
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
   el.dispatchEvent(new Event('change', { bubbles: true }));
+
+  // Blur to trigger validators on Workday/Ashby.
+  try {
+    el.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+    el.blur();
+  } catch {
+    /* ignore */
+  }
 }
 
 function fillSelect(el: HTMLSelectElement, value: string) {
