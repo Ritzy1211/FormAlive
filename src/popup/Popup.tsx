@@ -1,0 +1,189 @@
+import { useEffect, useState } from 'react';
+import type { RuntimeResponse, VaultContents } from '../shared/types';
+
+type Status = { initialized: boolean; unlocked: boolean };
+
+async function send<T = unknown>(msg: unknown): Promise<RuntimeResponse & { data?: T }> {
+  return chrome.runtime.sendMessage(msg);
+}
+
+export default function Popup() {
+  const [status, setStatus] = useState<Status | null>(null);
+  const [passphrase, setPassphrase] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [vault, setVault] = useState<VaultContents | null>(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  useEffect(() => {
+    send<Status>({ type: 'VAULT_STATUS' }).then((r) => {
+      if (r.ok) setStatus(r.data as Status);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (status?.unlocked) {
+      send<VaultContents>({ type: 'VAULT_GET' }).then((r) => {
+        if (r.ok) setVault(r.data as VaultContents);
+      });
+    }
+  }, [status?.unlocked]);
+
+  async function init() {
+    setError('');
+    if (passphrase.length < 8) return setError('Passphrase must be at least 8 characters.');
+    if (passphrase !== confirm) return setError('Passphrases do not match.');
+    setBusy(true);
+    const r = await send({ type: 'VAULT_INIT', passphrase });
+    setBusy(false);
+    if (!r.ok) return setError(r.error);
+    setStatus({ initialized: true, unlocked: true });
+    setPassphrase('');
+    setConfirm('');
+  }
+
+  async function unlock() {
+    setError('');
+    setBusy(true);
+    const r = await send({ type: 'VAULT_UNLOCK', passphrase });
+    setBusy(false);
+    if (!r.ok) return setError(r.error);
+    setStatus({ initialized: true, unlocked: true });
+    setPassphrase('');
+  }
+
+  async function lock() {
+    await send({ type: 'VAULT_LOCK' });
+    setStatus({ initialized: true, unlocked: false });
+    setVault(null);
+  }
+
+  async function fillPage() {
+    setMsg('');
+    const r = await send({ type: 'FILL_PAGE' });
+    setMsg(r.ok ? 'Filling…' : r.error);
+  }
+
+  function openOptions() {
+    chrome.runtime.openOptionsPage();
+  }
+
+  if (!status) {
+    return <div className="p-4 text-sm text-gray-500">Loading…</div>;
+  }
+
+  if (!status.initialized) {
+    return (
+      <div className="p-4 space-y-3">
+        <h1 className="text-lg font-semibold">Welcome to FormAlive</h1>
+        <p className="text-xs text-gray-600">
+          Create a master passphrase. It encrypts your data on this device. We can't recover it
+          if you forget it.
+        </p>
+        <input
+          type="password"
+          placeholder="Master passphrase"
+          value={passphrase}
+          onChange={(e) => setPassphrase(e.target.value)}
+          className="w-full border rounded px-2 py-1 text-sm"
+        />
+        <input
+          type="password"
+          placeholder="Confirm passphrase"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          className="w-full border rounded px-2 py-1 text-sm"
+        />
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        <button
+          onClick={init}
+          disabled={busy}
+          className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm rounded py-2"
+        >
+          Create vault
+        </button>
+      </div>
+    );
+  }
+
+  if (!status.unlocked) {
+    return (
+      <div className="p-4 space-y-3">
+        <h1 className="text-lg font-semibold">Unlock FormAlive</h1>
+        <input
+          type="password"
+          placeholder="Master passphrase"
+          value={passphrase}
+          onChange={(e) => setPassphrase(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && unlock()}
+          className="w-full border rounded px-2 py-1 text-sm"
+          autoFocus
+        />
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        <button
+          onClick={unlock}
+          disabled={busy}
+          className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm rounded py-2"
+        >
+          Unlock
+        </button>
+      </div>
+    );
+  }
+
+  const active = vault?.profiles.find((p) => p.id === vault.activeProfileId);
+
+  async function switchProfile(id: string) {
+    if (!vault) return;
+    const next = { ...vault, activeProfileId: id };
+    setVault(next);
+    await send({ type: 'VAULT_SAVE', contents: next });
+  }
+
+  return (
+    <div className="p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h1 className="text-base font-semibold">FormAlive</h1>
+        <button onClick={lock} className="text-xs text-gray-500 hover:text-gray-800">
+          Lock
+        </button>
+      </div>
+      {vault && vault.profiles.length > 0 ? (
+        <div className="space-y-1">
+          <label className="text-xs text-gray-600">Active profile</label>
+          <select
+            value={vault.activeProfileId}
+            onChange={(e) => switchProfile(e.target.value)}
+            className="w-full border rounded px-2 py-1 text-sm"
+          >
+            {vault.profiles.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.label}
+                {p.basics.firstName ? ` — ${p.basics.firstName} ${p.basics.lastName}` : ''}
+              </option>
+            ))}
+          </select>
+          {active && active.basics.email && (
+            <p className="text-[10px] text-gray-500 truncate">{active.basics.email}</p>
+          )}
+        </div>
+      ) : (
+        <div className="text-xs text-gray-500">No profile yet.</div>
+      )}
+      <button
+        onClick={fillPage}
+        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded py-2"
+      >
+        Fill this page
+      </button>
+      <button
+        onClick={openOptions}
+        className="w-full border text-sm rounded py-2 hover:bg-gray-50"
+      >
+        Edit profiles
+      </button>
+      {msg && <p className="text-xs text-gray-500">{msg}</p>}
+    </div>
+  );
+}

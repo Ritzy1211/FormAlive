@@ -1,0 +1,36 @@
+{
+  "name": "formalive",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first, encrypted Chrome extension that auto-fills online forms with one click.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "dev:hmr": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "icons": "node scripts/gen-icons.mjs",
+    "pack": "node scripts/pack.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "pdfjs-dist": "^4.4.168"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.25",
+    "@types/chrome": "^0.0.270",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.39",
+    "tailwindcss": "^3.4.6",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.4",
+    "vitest": "^2.0.3",
+    "jsdom": "^24.1.0"
+  }
+}
