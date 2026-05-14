@@ -189,6 +189,7 @@ export type RuntimeMessage =
   | { type: 'FILL_REQUEST'; hostname: string; fields: DetectedField[]; pageContext?: PageContext }
   | { type: 'LEARN_OVERRIDE'; hostname: string; field: DetectedField; value: string }
   | { type: 'FILL_PAGE' }
+  | { type: 'SCAN_REPORT' }
   | { type: 'GET_RESUME' };
 
 export interface PageContext {

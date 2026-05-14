@@ -403,6 +403,33 @@ chrome.runtime.onMessage.addListener((msg: { type: string }, _sender, sendRespon
     fillPage().then(() => sendResponse({ ok: true }));
     return true;
   }
+  if (msg.type === 'SCAN_REPORT') {
+    try {
+      const { fields } = scan();
+      const htmlLang = document.documentElement.getAttribute('lang') ?? '';
+      sendResponse({
+        hostname: location.hostname,
+        title: document.title,
+        htmlLang,
+        url: location.href,
+        adapter: ADAPTER?.id ?? null,
+        fieldCount: fields.length,
+        fields: fields.map((f) => ({
+          name: f.name,
+          id: f.id,
+          type: f.type,
+          autocomplete: f.autocomplete,
+          placeholder: f.placeholder,
+          label: f.label,
+          ariaLabel: f.ariaLabel,
+          options: f.options?.slice(0, 8) ?? undefined
+        }))
+      });
+    } catch (e) {
+      sendResponse({ error: String(e) });
+    }
+    return false;
+  }
   return false;
 });
 

@@ -65,6 +65,22 @@ export default function Popup() {
     setMsg(r.ok ? 'Filling…' : r.error);
   }
 
+  async function copyScanReport() {
+    setMsg('Scanning…');
+    const r = await send<unknown>({ type: 'SCAN_REPORT' });
+    if (!r.ok) {
+      setMsg(r.error ?? 'Scan failed');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(r.data, null, 2));
+      setMsg('Scan report copied to clipboard.');
+    } catch {
+      setMsg('Copy failed — open devtools to view.');
+      console.log('[FormAlive scan report]', r.data);
+    }
+  }
+
   function openOptions() {
     chrome.runtime.openOptionsPage();
   }
@@ -182,6 +198,13 @@ export default function Popup() {
         className="w-full border text-sm rounded py-2 hover:bg-gray-50"
       >
         Edit profiles
+      </button>
+      <button
+        onClick={copyScanReport}
+        className="w-full text-xs text-gray-500 hover:text-gray-800 py-1"
+        title="Copies a redacted JSON dump of detected fields on this page"
+      >
+        Debug: copy scan report
       </button>
       {msg && <p className="text-xs text-gray-500">{msg}</p>}
     </div>

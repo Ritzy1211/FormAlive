@@ -239,6 +239,17 @@ async function handle(msg: RuntimeMessage): Promise<RuntimeResponse> {
       }
     }
 
+    case 'SCAN_REPORT': {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id) return { ok: false, error: 'No active tab.' };
+      try {
+        const data = await chrome.tabs.sendMessage(tab.id, { type: 'SCAN_REPORT' });
+        return { ok: true, data };
+      } catch (e) {
+        return { ok: false, error: 'Content script not ready on this page.' };
+      }
+    }
+
     case 'GET_RESUME': {
       if (!session) return { ok: false, error: 'Vault locked.' };
       const profile =
