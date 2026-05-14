@@ -384,10 +384,21 @@ function fillCheckbox(el: HTMLInputElement, value: string) {
   if (!wantOn && !wantOff) return;
   const target = wantOn;
   if (el.checked === target) return;
-  el.checked = target;
-  el.dispatchEvent(new Event('input', { bubbles: true }));
-  el.dispatchEvent(new Event('change', { bubbles: true }));
-  el.dispatchEvent(new Event('click', { bubbles: true }));
+  // React-controlled checkboxes (Ashby, Workday) ignore direct `.checked`
+  // assignment. The reliable way is a real click, which fires synthetic
+  // React events. Fall back to setting `.checked` + events if click is
+  // intercepted (e.g. disabled / readonly wrappers).
+  try {
+    el.focus({ preventScroll: true });
+  } catch {
+    /* ignore */
+  }
+  el.click();
+  if (el.checked !== target) {
+    el.checked = target;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }
 }
 
 function applyFills(filled: FilledValue[], elements: Map<string, HTMLElement>): number {

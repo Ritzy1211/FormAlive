@@ -81,6 +81,14 @@ export function matchField(field: DetectedField, profile: Profile): FilledValue 
     { test: /\bremote\b|hybrid|on[-_ ]?site|work[-_ ]?(model|arrangement|location)/, value: el?.remotePreference, confidence: 0.7 },
 
     // ---- Address ----
+    // "Where are you currently located?" / "Current location" — typeahead on
+    // many ATS (Ashby, Lever). Fill with "City, Country" so the dropdown can
+    // suggest a match; user picks from suggestions.
+    {
+      test: /currently[-_ ]?located|current[-_ ]?location|where[-_ ]?(are|do)[-_ ]?you[-_ ]?(currently[-_ ]?)?(located|live|reside)|\blocation\b(?![-_ ]?(code|id))/,
+      value: [b.city, b.country].filter(Boolean).join(', ') || b.city,
+      confidence: 0.85
+    },
     // City and state MUST be checked before generic "address".
     { test: /\bcity\b|address-level2|\blocality\b|\btown\b/, value: b.city, confidence: 0.9 },
     { test: /\bstate\b|\bprovince\b|\bregion\b|prefecture|\boblast\b|\bcounty\b|address-level1/, value: b.state, confidence: 0.85 },

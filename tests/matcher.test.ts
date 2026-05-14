@@ -168,4 +168,18 @@ describe('matcher', () => {
     );
     expect(r).toBeNull();
   });
+
+  it('matches "Where are you currently located?" with City, Country', () => {
+    p.basics.city = 'Lagos';
+    p.basics.country = 'Nigeria';
+    const r = matchField(field({ label: 'Where are you currently located?' }), p);
+    expect(r?.value).toBe('Lagos, Nigeria');
+  });
+
+  it('matches "Current location" when only city is set', () => {
+    p.basics.city = 'Berlin';
+    p.basics.country = '';
+    const r = matchField(field({ label: 'Current location' }), p);
+    expect(r?.value).toBe('Berlin');
+  });
 });
