@@ -67,6 +67,53 @@ async function sendOrInject<T = unknown>(
   }
 }
 
+/** Query every frame in the tab for a scan report and merge the results.
+ *  Useful for ATS that embed their form in a cross-origin iframe (Greenhouse
+ *  on careers.airbnb.com, Workday inside corporate sites, etc.). */
+async function scanAllFrames(tabId: number): Promise<Record<string, unknown> | null> {
+  let frames: chrome.webNavigation.GetAllFrameResultDetails[] = [];
+  try {
+    frames = (await chrome.webNavigation.getAllFrames({ tabId })) ?? [];
+  } catch {
+    /* webNavigation may be unavailable; fall back to top frame */
+  }
+  if (!frames.length) {
+    const top = await sendOrInject<Record<string, unknown>>(tabId, { type: 'SCAN_REPORT' });
+    return top && typeof top === 'object' ? (top as Record<string, unknown>) : null;
+  }
+  const reports: Array<Record<string, unknown>> = [];
+  await Promise.all(
+    frames.map(async (f) => {
+      try {
+        const r = await chrome.tabs.sendMessage(
+          tabId,
+          { type: 'SCAN_REPORT' },
+          { frameId: f.frameId }
+        );
+        if (r && typeof r === 'object') {
+          (r as Record<string, unknown>).frameId = f.frameId;
+          (r as Record<string, unknown>).frameUrl = f.url;
+          reports.push(r as Record<string, unknown>);
+        }
+      } catch {
+        /* frame has no content script (chrome://, about:blank, etc.) */
+      }
+    })
+  );
+  if (!reports.length) return null;
+  const top = reports.find((r) => r.frameId === 0) ?? reports[0];
+  const totalFields = reports.reduce(
+    (n, r) => n + (Array.isArray(r.fields) ? (r.fields as unknown[]).length : 0),
+    0
+  );
+  return {
+    ...top,
+    frameCount: reports.length,
+    totalFieldCount: totalFields,
+    frames: reports
+  };
+}
+
 async function readEnvelope(): Promise<VaultEnvelope | null> {
   const out = await chrome.storage.local.get(STORAGE_KEY);
   return (out[STORAGE_KEY] as VaultEnvelope | undefined) ?? null;
@@ -261,7 +308,7 @@ async function handle(msg: RuntimeMessage): Promise<RuntimeResponse> {
     case 'SCAN_REPORT': {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.id) return { ok: false, error: 'No active tab.' };
-      const data = await sendOrInject(tab.id, { type: 'SCAN_REPORT' });
+      const data = await scanAllFrames(tab.id);
       if (data) return { ok: true, data };
       return { ok: false, error: 'Refresh the page (F5), then try again.' };
     }

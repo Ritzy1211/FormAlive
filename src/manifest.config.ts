@@ -23,7 +23,7 @@ export default defineManifest({
       all_frames: true
     }
   ],
-  permissions: ['storage', 'activeTab', 'scripting'],
+  permissions: ['storage', 'activeTab', 'scripting', 'webNavigation'],
   host_permissions: [],
   icons: {
     16: 'src/assets/icon-16.png',
