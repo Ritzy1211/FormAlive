@@ -70,7 +70,7 @@ export function matchField(field: DetectedField, profile: Profile): FilledValue 
     // ---- Work eligibility (job applications) ----
     // These must run BEFORE address rules so questions like "authorized to
     // work in the country?" don't get caught by the generic country rule.
-    { test: /sponsor(ship)?|require[-_ ]?sponsor|need[-_ ]?sponsor/, value: el?.requiresSponsorship, confidence: 0.92 },
+    { test: /sponsor(ship)?|require[-_ ]?sponsor|need[-_ ]?sponsor|require[-_ ]?(visa[-_ ]?)?sponsor|visa[-_ ]?status/, value: el?.requiresSponsorship, confidence: 0.92 },
     { test: /authoriz(ed|ation)[-_ ]?to[-_ ]?work|work[-_ ]?auth|legally[-_ ]?(allowed|authoris(ed|ation))|eligible[-_ ]?to[-_ ]?work/, value: authorizedToWork || el?.status, confidence: 0.9 },
     { test: /right[-_ ]?to[-_ ]?work/, value: el?.rightToWorkUK, confidence: 0.9 },
     { test: /\bvisa\b/, value: el?.visaType, confidence: 0.8 },

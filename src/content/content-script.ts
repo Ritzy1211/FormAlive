@@ -384,21 +384,51 @@ function fillCheckbox(el: HTMLInputElement, value: string) {
   if (!wantOn && !wantOff) return;
   const target = wantOn;
   if (el.checked === target) return;
-  // React-controlled checkboxes (Ashby, Workday) ignore direct `.checked`
-  // assignment. The reliable way is a real click, which fires synthetic
-  // React events. Fall back to setting `.checked` + events if click is
-  // intercepted (e.g. disabled / readonly wrappers).
+
+  // React-controlled checkboxes (Ashby, Workday, Lever) usually render the
+  // <input> as visually hidden and use a styled <label> / <span> as the
+  // click target. Calling .click() on a display:none input is a no-op in
+  // some browsers, so prefer clicking the associated label.
+  const labelEl = findClickableLabel(el);
   try {
     el.focus({ preventScroll: true });
   } catch {
     /* ignore */
   }
-  el.click();
+  if (labelEl) {
+    labelEl.click();
+  } else {
+    el.click();
+  }
+
+  // Fallback if click was intercepted: force state + events.
   if (el.checked !== target) {
     el.checked = target;
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
   }
+}
+
+function findClickableLabel(el: HTMLInputElement): HTMLElement | null {
+  // 1. Explicit <label for="id">
+  if (el.id) {
+    const doc = el.ownerDocument;
+    const explicit = doc.querySelector<HTMLLabelElement>(
+      `label[for="${CSS.escape(el.id)}"]`
+    );
+    if (explicit) return explicit;
+  }
+  // 2. Wrapping <label>
+  const parentLabel = el.closest('label');
+  if (parentLabel) return parentLabel as HTMLElement;
+  // 3. Ashby pattern: input is inside a div with a sibling .ashby-checkbox or
+  //    a styled span/div acting as the visual checkbox. Click the nearest
+  //    interactive ancestor.
+  const wrapper = el.closest<HTMLElement>(
+    '[role="checkbox"], [class*="checkbox" i], [class*="Checkbox"]'
+  );
+  if (wrapper && wrapper !== (el as unknown as HTMLElement)) return wrapper;
+  return null;
 }
 
 function applyFills(filled: FilledValue[], elements: Map<string, HTMLElement>): number {
