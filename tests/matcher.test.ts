@@ -132,4 +132,40 @@ describe('matcher', () => {
     const r = matchField(field({ label: 'Nationality' }), p);
     expect(r?.value).toBe('Nigerian');
   });
+
+  it('derives "yes" for authorized-to-work when no sponsorship needed', () => {
+    p.eligibility!.requiresSponsorship = 'no';
+    const r = matchField(
+      field({ type: 'checkbox', label: 'Are you authorized to work in the country?' }),
+      p
+    );
+    expect(r?.value).toBe('yes');
+  });
+
+  it('derives "no" for authorized-to-work when sponsorship needed', () => {
+    p.eligibility!.requiresSponsorship = 'yes';
+    const r = matchField(
+      field({ type: 'checkbox', label: 'Are you authorized to work in the country?' }),
+      p
+    );
+    expect(r?.value).toBe('no');
+  });
+
+  it('does NOT auto-fill consent/declaration checkboxes', () => {
+    p.basics.firstName = 'Ada';
+    const r = matchField(
+      field({ type: 'checkbox', label: 'I confirm I have read the above.' }),
+      p
+    );
+    expect(r).toBeNull();
+  });
+
+  it('does NOT auto-fill marketing-subscribe checkboxes', () => {
+    p.basics.email = 'a@b.com';
+    const r = matchField(
+      field({ type: 'checkbox', label: 'Subscribe me to marketing emails' }),
+      p
+    );
+    expect(r).toBeNull();
+  });
 });

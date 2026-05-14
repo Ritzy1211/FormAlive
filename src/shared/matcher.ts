@@ -18,6 +18,17 @@ export function matchField(field: DetectedField, profile: Profile): FilledValue 
     .join(' ')
     .toLowerCase();
 
+  // Never auto-check consent / declaration / agreement checkboxes — the user
+  // must read and confirm these themselves. Same for "subscribe" / "marketing".
+  if (
+    (field.type === 'checkbox' || field.type === 'radio') &&
+    /\b(agree|consent|confirm|terms|privacy|policy|read[-_ ]?the[-_ ]?above|certify|attest|sign[-_ ]?off|subscribe|marketing|gdpr)\b/i.test(
+      signal
+    )
+  ) {
+    return null;
+  }
+
   const b = profile.basics;
   const l = profile.links;
   const el = profile.eligibility;
@@ -28,6 +39,15 @@ export function matchField(field: DetectedField, profile: Profile): FilledValue 
   const ec = profile.emergencyContact;
   const ref0 = profile.references?.[0];
   const lang0 = profile.languages?.[0];
+
+  // Derived yes/no for "are you authorized to work" — inverse of sponsorship.
+  // If user said they need sponsorship → not authorized in that country.
+  const authorizedToWork =
+    el?.requiresSponsorship === 'no'
+      ? 'yes'
+      : el?.requiresSponsorship === 'yes'
+        ? 'no'
+        : '';
 
   const rules: Array<{ test: RegExp; value: string | undefined; confidence: number }> = [
     // ---- Identity ----
@@ -47,6 +67,19 @@ export function matchField(field: DetectedField, profile: Profile): FilledValue 
     { test: /country[-_ ]?code|dial[-_ ]?code|phone[-_ ]?code|\biso[-_ ]?code\b/, value: b.phoneCountryCode, confidence: 0.85 },
     { test: /\btel\b|\bphone\b|\bmobile\b|\bcell\b/, value: b.phone, confidence: 0.9 },
 
+    // ---- Work eligibility (job applications) ----
+    // These must run BEFORE address rules so questions like "authorized to
+    // work in the country?" don't get caught by the generic country rule.
+    { test: /sponsor(ship)?|require[-_ ]?sponsor|need[-_ ]?sponsor/, value: el?.requiresSponsorship, confidence: 0.92 },
+    { test: /authoriz(ed|ation)[-_ ]?to[-_ ]?work|work[-_ ]?auth|legally[-_ ]?(allowed|authoris(ed|ation))|eligible[-_ ]?to[-_ ]?work/, value: authorizedToWork || el?.status, confidence: 0.9 },
+    { test: /right[-_ ]?to[-_ ]?work/, value: el?.rightToWorkUK, confidence: 0.9 },
+    { test: /\bvisa\b/, value: el?.visaType, confidence: 0.8 },
+    { test: /notice[-_ ]?period/, value: el?.noticePeriod, confidence: 0.95 },
+    { test: /(available|start)[-_ ]?(date|from)|earliest[-_ ]?start/, value: el?.availableStartDate, confidence: 0.9 },
+    { test: /relocat/, value: el?.willingToRelocate, confidence: 0.9 },
+    { test: /willing[-_ ]?to[-_ ]?travel|travel[-_ ]?(percentage|required)/, value: el?.willingToTravel, confidence: 0.85 },
+    { test: /\bremote\b|hybrid|on[-_ ]?site|work[-_ ]?(model|arrangement|location)/, value: el?.remotePreference, confidence: 0.7 },
+
     // ---- Address ----
     // City and state MUST be checked before generic "address".
     { test: /\bcity\b|address-level2|\blocality\b|\btown\b/, value: b.city, confidence: 0.9 },
@@ -65,17 +98,6 @@ export function matchField(field: DetectedField, profile: Profile): FilledValue 
     { test: /behance/, value: l.behance, confidence: 0.95 },
     { test: /dribbble/, value: l.dribbble, confidence: 0.95 },
     { test: /\bwebsite\b|personal[-_ ]?site|\burl\b/, value: l.website, confidence: 0.75 },
-
-    // ---- Work eligibility (job applications) ----
-    { test: /sponsor(ship)?|require[-_ ]?sponsor|need[-_ ]?sponsor/, value: el?.requiresSponsorship, confidence: 0.9 },
-    { test: /authoriz(ed|ation)[-_ ]?to[-_ ]?work|work[-_ ]?auth|legally[-_ ]?(allowed|authoris(ed|ation))/, value: el?.status, confidence: 0.85 },
-    { test: /right[-_ ]?to[-_ ]?work/, value: el?.rightToWorkUK, confidence: 0.9 },
-    { test: /\bvisa\b/, value: el?.visaType, confidence: 0.8 },
-    { test: /notice[-_ ]?period/, value: el?.noticePeriod, confidence: 0.95 },
-    { test: /(available|start)[-_ ]?(date|from)|earliest[-_ ]?start/, value: el?.availableStartDate, confidence: 0.9 },
-    { test: /relocat/, value: el?.willingToRelocate, confidence: 0.9 },
-    { test: /willing[-_ ]?to[-_ ]?travel|travel[-_ ]?(percentage|required)/, value: el?.willingToTravel, confidence: 0.85 },
-    { test: /\bremote\b|hybrid|on[-_ ]?site|work[-_ ]?(model|arrangement|location)/, value: el?.remotePreference, confidence: 0.7 },
 
     // ---- Compensation ----
     { test: /current[-_ ]?(salary|compensation|pay|ctc)/, value: co?.currentSalary, confidence: 0.95 },

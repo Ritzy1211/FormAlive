@@ -34,8 +34,29 @@ function findLabel(el: HTMLElement): string {
   if (parentLabel?.textContent) return parentLabel.textContent.trim();
   const aria = el.getAttribute('aria-labelledby');
   if (aria) {
-    const ref = document.getElementById(aria);
-    if (ref?.textContent) return ref.textContent.trim();
+    // aria-labelledby can be a space-separated id list
+    const refs = aria
+      .split(/\s+/)
+      .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
+      .filter(Boolean);
+    if (refs.length) return refs.join(' ').trim();
+  }
+  // Fallback: walk up a few wrappers and look for a preceding label/heading
+  // sibling. Ashby/Lever/Workday often render <label>question</label><div><input/></div>.
+  let node: HTMLElement | null = el;
+  for (let depth = 0; node && depth < 5; depth++, node = node.parentElement) {
+    let prev = node.previousElementSibling as HTMLElement | null;
+    while (prev) {
+      if (
+        prev.matches(
+          'label, h1, h2, h3, h4, h5, h6, legend, p, div[class*="label" i], div[class*="question" i], span[class*="label" i]'
+        )
+      ) {
+        const txt = prev.textContent?.trim() ?? '';
+        if (txt && txt.length < 300) return txt;
+      }
+      prev = prev.previousElementSibling as HTMLElement | null;
+    }
   }
   return '';
 }
