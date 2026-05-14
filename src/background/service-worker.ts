@@ -46,6 +46,27 @@ function lock() {
   session = null;
 }
 
+/** Send a message to the active tab's content script. Tries the top frame
+ *  first, then any frame. Returns the response or null on failure. The
+ *  caller should surface a "refresh the page" hint on null. */
+async function sendOrInject<T = unknown>(
+  tabId: number,
+  msg: unknown
+): Promise<T | true | null> {
+  try {
+    const r = await chrome.tabs.sendMessage(tabId, msg, { frameId: 0 });
+    return (r ?? true) as T | true;
+  } catch {
+    /* fall through */
+  }
+  try {
+    const r = await chrome.tabs.sendMessage(tabId, msg);
+    return (r ?? true) as T | true;
+  } catch {
+    return null;
+  }
+}
+
 async function readEnvelope(): Promise<VaultEnvelope | null> {
   const out = await chrome.storage.local.get(STORAGE_KEY);
   return (out[STORAGE_KEY] as VaultEnvelope | undefined) ?? null;
@@ -231,23 +252,18 @@ async function handle(msg: RuntimeMessage): Promise<RuntimeResponse> {
       // Triggered from popup — forward to the active tab's content script.
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.id) return { ok: false, error: 'No active tab.' };
-      try {
-        await chrome.tabs.sendMessage(tab.id, { type: 'FILL_PAGE' }, { frameId: 0 });
+      if (await sendOrInject(tab.id, { type: 'FILL_PAGE' })) {
         return { ok: true };
-      } catch (e) {
-        return { ok: false, error: 'Content script not ready on this page.' };
       }
+      return { ok: false, error: 'Refresh the page (F5), then try again.' };
     }
 
     case 'SCAN_REPORT': {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.id) return { ok: false, error: 'No active tab.' };
-      try {
-        const data = await chrome.tabs.sendMessage(tab.id, { type: 'SCAN_REPORT' }, { frameId: 0 });
-        return { ok: true, data };
-      } catch (e) {
-        return { ok: false, error: 'Content script not ready on this page.' };
-      }
+      const data = await sendOrInject(tab.id, { type: 'SCAN_REPORT' });
+      if (data) return { ok: true, data };
+      return { ok: false, error: 'Refresh the page (F5), then try again.' };
     }
 
     case 'GET_RESUME': {
