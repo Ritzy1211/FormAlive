@@ -144,7 +144,8 @@ export default function Options() {
       const dataB64 = btoa(bin);
       updateActive((p) => ({
         ...p,
-        resume: { filename: file.name, mime: file.type || 'application/pdf', dataB64 }
+        resume: { filename: file.name, mime: file.type || 'application/pdf', dataB64 },
+        resumeText: s.rawText ?? ''
       }));
       setResumeMsg(`Stored ${file.name} (${Math.round(file.size / 1024)} KB). Review suggestions below, then apply.`);
     } catch (e) {

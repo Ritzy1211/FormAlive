@@ -561,3 +561,206 @@ document.addEventListener(
   },
   true
 );
+
+// ============================================================================
+// Silent form detection + consent banner
+// ----------------------------------------------------------------------------
+// Vision: be the user's personal job-application assistant, not just autofill.
+// Detect a job-application-shaped form on the page, and offer to fill it with
+// ONE click. We never fill without explicit user consent — privacy first.
+// ============================================================================
+
+const KNOWN_ATS_HOSTS =
+  /myworkdayjobs\.com|workday\.com|greenhouse\.io|lever\.co|ashbyhq\.com|icims\.com|linkedin\.com|smartrecruiters\.com|bamboohr\.com|taleo\.net|jobvite\.com|indeed\.com|glassdoor\.com|brassring\.com|successfactors\.com|workable\.com|breezy\.hr|recruitee\.com/i;
+
+function looksLikeApplicationForm(fields: DetectedField[]): boolean {
+  if (fields.length < 2) return false;
+  if (KNOWN_ATS_HOSTS.test(location.hostname)) return true;
+  const blob = fields
+    .map((f) => `${f.label} ${f.name} ${f.id} ${f.autocomplete}`.toLowerCase())
+    .join(' | ');
+  const signals = [
+    /\bemail\b/.test(blob),
+    /\b(first|last|full|given|family)[-_ ]?name\b/.test(blob) || /\bname\b/.test(blob),
+    /\b(phone|tel|mobile)\b/.test(blob),
+    /\b(resume|cv|curriculum)\b/.test(blob),
+    /\b(linkedin|github|portfolio)\b/.test(blob),
+    /\b(cover[-_ ]?letter|experience|why[-_ ]?(you|us)|tell[-_ ]?us)\b/.test(blob),
+    /\b(sponsor|authoriz|right[-_ ]?to[-_ ]?work|visa)\b/.test(blob)
+  ].filter(Boolean).length;
+  return signals >= 2;
+}
+
+const BANNER_ID = 'formalive-banner-host';
+let bannerHost: HTMLElement | null = null;
+let bannerDismissedThisLoad = false;
+
+function getDismissKey(): string {
+  return `formalive:dismiss:${location.host}${location.pathname}`;
+}
+
+function isBannerDismissed(): boolean {
+  if (bannerDismissedThisLoad) return true;
+  try {
+    return sessionStorage.getItem(getDismissKey()) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function dismissBanner(persist: boolean) {
+  bannerDismissedThisLoad = true;
+  if (persist) {
+    try {
+      sessionStorage.setItem(getDismissKey(), '1');
+    } catch {
+      /* ignore */
+    }
+  }
+  if (bannerHost) {
+    bannerHost.remove();
+    bannerHost = null;
+  }
+}
+
+function showBanner(fieldCount: number) {
+  // Don't stack banners; don't re-show after dismissal.
+  if (bannerHost || isBannerDismissed()) return;
+  if (!document.body) return;
+
+  const host = document.createElement('div');
+  host.id = BANNER_ID;
+  // The host element itself is positioned; the inner shadow tree handles look.
+  host.style.cssText = [
+    'all: initial',
+    'position: fixed',
+    'bottom: 20px',
+    'right: 20px',
+    'z-index: 2147483647',
+    'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  ].join('; ');
+  const shadow = host.attachShadow({ mode: 'closed' });
+
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <style>
+      :host, * { box-sizing: border-box; }
+      .card {
+        background: #0f172a;
+        color: #f8fafc;
+        border-radius: 14px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+        padding: 14px 16px;
+        max-width: 360px;
+        font-size: 13.5px;
+        line-height: 1.4;
+        border: 1px solid rgba(255,255,255,0.08);
+        animation: in 0.18s ease-out;
+      }
+      @keyframes in {
+        from { transform: translateY(8px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      .row { display: flex; align-items: center; gap: 10px; }
+      .logo {
+        width: 28px; height: 28px; border-radius: 8px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        display: grid; place-items: center;
+        color: white; font-weight: 700; font-size: 13px;
+        flex-shrink: 0;
+      }
+      .title { font-weight: 600; font-size: 14px; }
+      .sub { color: #cbd5e1; margin-top: 2px; }
+      .actions { margin-top: 12px; display: flex; gap: 8px; }
+      button {
+        all: unset;
+        cursor: pointer;
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        transition: background 0.12s;
+      }
+      .primary { background: #22c55e; color: #0f172a; }
+      .primary:hover { background: #16a34a; color: white; }
+      .ghost { background: transparent; color: #cbd5e1; }
+      .ghost:hover { background: rgba(255,255,255,0.06); }
+      .lock { color: #94a3b8; font-size: 11px; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+    </style>
+    <div class="card" role="dialog" aria-label="FormAlive: application form detected">
+      <div class="row">
+        <div class="logo">FA</div>
+        <div>
+          <div class="title">Application form detected</div>
+          <div class="sub"><span id="count"></span> fields ready to fill from your profile.</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="fa-fill">Fill this form</button>
+        <button class="ghost" id="fa-not-now">Not now</button>
+        <button class="ghost" id="fa-never">Don't ask here</button>
+      </div>
+      <div class="lock">🔒 Data stays encrypted on your device.</div>
+    </div>
+  `;
+  shadow.appendChild(wrap);
+
+  const countEl = shadow.getElementById('count');
+  if (countEl) countEl.textContent = String(fieldCount);
+
+  shadow.getElementById('fa-fill')?.addEventListener('click', () => {
+    dismissBanner(false);
+    fillPage().catch((e) => console.warn('[FormAlive] fill error', e));
+  });
+  shadow.getElementById('fa-not-now')?.addEventListener('click', () => dismissBanner(false));
+  shadow.getElementById('fa-never')?.addEventListener('click', () => dismissBanner(true));
+
+  document.body.appendChild(host);
+  bannerHost = host;
+}
+
+let detectScheduled = false;
+function scheduleDetection(delayMs = 600) {
+  if (detectScheduled) return;
+  detectScheduled = true;
+  setTimeout(() => {
+    detectScheduled = false;
+    try {
+      if (isBannerDismissed() || bannerHost) return;
+      const { fields } = scan();
+      if (looksLikeApplicationForm(fields)) showBanner(fields.length);
+    } catch (e) {
+      console.warn('[FormAlive] detection error', e);
+    }
+  }, delayMs);
+}
+
+// Initial detection after page settles. Many ATS pages render forms after
+// the initial load, so we also watch the DOM for added inputs/textareas.
+if (location.protocol === 'http:' || location.protocol === 'https:') {
+  if (document.readyState === 'complete') {
+    scheduleDetection(800);
+  } else {
+    window.addEventListener('load', () => scheduleDetection(800), { once: true });
+  }
+
+  const mo = new MutationObserver((mutations) => {
+    if (bannerHost || isBannerDismissed()) return;
+    for (const m of mutations) {
+      for (const n of Array.from(m.addedNodes)) {
+        if (n instanceof HTMLElement) {
+          if (
+            n.matches?.('input, textarea, select, form') ||
+            n.querySelector?.('input, textarea, select, form')
+          ) {
+            scheduleDetection(900);
+            return;
+          }
+        }
+      }
+    }
+  });
+  mo.observe(document.documentElement, { childList: true, subtree: true });
+}
+

@@ -155,13 +155,120 @@ const ashbyAdapter: SiteAdapter = {
   }
 };
 
+// ---------- SmartRecruiters ----------
+// SmartRecruiters uses ids like "field-firstName", "field-email", "field-phoneNumber",
+// "field-location-city", "field-location-country". Sometimes wrapped in a postings shell.
+const smartRecruitersAdapter: SiteAdapter = {
+  id: 'smartrecruiters',
+  matches: (h) => /smartrecruiters\.com$/i.test(h) || /jobs\.smartrecruiters\.com$/i.test(h),
+  hintFor(el) {
+    const id = (el.id || '').toLowerCase();
+    const name = (el.getAttribute('name') || '').toLowerCase();
+    const blob = `${id} ${name}`;
+    if (/firstname/.test(blob)) return { extraLabel: 'first name' };
+    if (/lastname/.test(blob)) return { extraLabel: 'last name' };
+    if (/email/.test(blob)) return { extraLabel: 'email' };
+    if (/phone/.test(blob)) return { extraLabel: 'phone' };
+    if (/location[-_ ]?city|^city/.test(blob)) return { extraLabel: 'city' };
+    if (/location[-_ ]?country|^country/.test(blob)) return { extraLabel: 'country' };
+    if (/linkedin/.test(blob)) return { extraLabel: 'linkedin' };
+    if (/coverletter|cover[-_ ]?letter/.test(blob)) return { extraLabel: 'cover letter' };
+    return null;
+  }
+};
+
+// ---------- BambooHR ----------
+// BambooHR career sites (acme.bamboohr.com/careers) name fields with simple
+// kebab/camel like "firstName", "lastName", "email", "phone", "coverLetter".
+const bambooAdapter: SiteAdapter = {
+  id: 'bamboohr',
+  matches: (h) => /bamboohr\.com$/i.test(h),
+  hintFor(el) {
+    const id = (el.id || '').toLowerCase();
+    const name = (el.getAttribute('name') || '').toLowerCase();
+    const blob = `${id} ${name}`;
+    if (/firstname|first[-_ ]?name/.test(blob)) return { extraLabel: 'first name' };
+    if (/lastname|last[-_ ]?name/.test(blob)) return { extraLabel: 'last name' };
+    if (/^email\b|emailaddress/.test(blob)) return { extraLabel: 'email' };
+    if (/phone/.test(blob)) return { extraLabel: 'phone' };
+    if (/city/.test(blob)) return { extraLabel: 'city' };
+    if (/state/.test(blob)) return { extraLabel: 'state' };
+    if (/zip|postal/.test(blob)) return { extraLabel: 'postal code zip' };
+    if (/coverletter|cover[-_ ]?letter/.test(blob)) return { extraLabel: 'cover letter' };
+    return null;
+  }
+};
+
+// ---------- Taleo / Oracle HCM ----------
+// Taleo (taleo.net / oraclecloud.com career sites) uses long ids like
+// "input1" but exposes semantic data-* attrs. Best signal is usually the label
+// text already; the adapter just promotes common cases.
+const taleoAdapter: SiteAdapter = {
+  id: 'taleo',
+  matches: (h) =>
+    /taleo\.net$/i.test(h) || /oraclecloud\.com$/i.test(h) || /jobs\.oracle\.com$/i.test(h),
+  hintFor(el) {
+    const aria = (el.getAttribute('aria-label') || '').toLowerCase();
+    const ph = (el.getAttribute('placeholder') || '').toLowerCase();
+    const blob = `${aria} ${ph}`;
+    if (/first[-_ ]?name/.test(blob)) return { extraLabel: 'first name' };
+    if (/last[-_ ]?name/.test(blob)) return { extraLabel: 'last name' };
+    if (/email/.test(blob)) return { extraLabel: 'email' };
+    if (/phone|mobile/.test(blob)) return { extraLabel: 'phone' };
+    return null;
+  }
+};
+
+// ---------- Indeed Apply ----------
+// Indeed Apply uses ids like "input-applicant.name", "input-applicant.email",
+// "input-applicant.phoneNumber". Forms often appear in an iframe on the job
+// page itself (smartapply.indeed.com).
+const indeedAdapter: SiteAdapter = {
+  id: 'indeed',
+  matches: (h) =>
+    /indeed\.com$/i.test(h) || /smartapply\.indeed\.com$/i.test(h),
+  hintFor(el) {
+    const id = (el.id || '').toLowerCase();
+    const name = (el.getAttribute('name') || '').toLowerCase();
+    const blob = `${id} ${name}`;
+    if (/applicant\.?(first)?name|first[-_ ]?name/.test(blob)) return { extraLabel: 'full name' };
+    if (/email/.test(blob)) return { extraLabel: 'email' };
+    if (/phone/.test(blob)) return { extraLabel: 'phone' };
+    if (/location|city/.test(blob)) return { extraLabel: 'city' };
+    if (/coverletter|cover[-_ ]?letter/.test(blob)) return { extraLabel: 'cover letter' };
+    return null;
+  }
+};
+
+// ---------- Workable ----------
+// Workable (apply.workable.com) names fields by question id but exposes labels
+// reliably. Adapter just normalises the obvious ones.
+const workableAdapter: SiteAdapter = {
+  id: 'workable',
+  matches: (h) => /workable\.com$/i.test(h) || /apply\.workable\.com$/i.test(h),
+  hintFor(el) {
+    const id = (el.id || '').toLowerCase();
+    const blob = id;
+    if (/firstname/.test(blob)) return { extraLabel: 'first name' };
+    if (/lastname/.test(blob)) return { extraLabel: 'last name' };
+    if (/email/.test(blob)) return { extraLabel: 'email' };
+    if (/phone/.test(blob)) return { extraLabel: 'phone' };
+    return null;
+  }
+};
+
 const ADAPTERS: SiteAdapter[] = [
   workdayAdapter,
   greenhouseAdapter,
   leverAdapter,
   linkedinAdapter,
   icimsAdapter,
-  ashbyAdapter
+  ashbyAdapter,
+  smartRecruitersAdapter,
+  bambooAdapter,
+  taleoAdapter,
+  indeedAdapter,
+  workableAdapter
 ];
 
 export function pickAdapter(hostname: string): SiteAdapter | null {

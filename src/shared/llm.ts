@@ -148,3 +148,116 @@ export async function llmMatchField(
     confidence: parsed.confidence
   };
 }
+
+// ============================================================================
+// Free-text essay drafting
+// ----------------------------------------------------------------------------
+// Generates a tailored paragraph for open-ended application questions like
+// "Tell us about your experience" or "Why are you a good fit". The drafter is
+// grounded in the user's resume + work history + page context (company/role)
+// so answers feel personal and on-topic.
+// ============================================================================
+
+export interface EssayContext {
+  question: string;
+  /** Plain-text resume extract, if available. */
+  resumeText?: string;
+  /** Page metadata: company name, role title, etc. */
+  page?: {
+    title?: string;
+    siteName?: string;
+    url?: string;
+  };
+  /** Approximate target length in words. Defaults to 120. */
+  targetWords?: number;
+}
+
+const ESSAY_SYSTEM = [
+  'You are helping the user write a short, authentic answer to a job-application question.',
+  'Constraints:',
+  '- Write in first person from the user\'s perspective.',
+  '- Ground every claim in the resume / work history provided. Never invent employers, titles, dates, or credentials.',
+  '- Match the tone of a real applicant: confident, specific, not robotic.',
+  '- Avoid clichés ("passionate self-starter", "team player"), bullet lists, and headings.',
+  '- Keep to roughly the requested length (one to two short paragraphs).',
+  '- If the resume contains nothing relevant to the question, return an empty string. Do NOT fabricate.',
+  'Respond with strict JSON only: {"answer":"<your-draft-or-empty-string>"}.'
+].join('\n');
+
+function essayUserPrompt(profile: Profile, ctx: EssayContext): string {
+  const work = (profile.work ?? []).slice(0, 6).map((w) => ({
+    company: w.company,
+    title: w.title,
+    start: w.startDate,
+    end: w.endDate,
+    description: w.description?.slice(0, 600) ?? ''
+  }));
+  const education = (profile.education ?? []).slice(0, 4).map((e) => ({
+    school: e.school,
+    degree: e.degree,
+    field: e.field,
+    end: e.endDate
+  }));
+  return JSON.stringify({
+    question: ctx.question,
+    target_word_count: ctx.targetWords ?? 120,
+    applicant: {
+      name: `${profile.basics.firstName} ${profile.basics.lastName}`.trim(),
+      location: [profile.basics.city, profile.basics.country].filter(Boolean).join(', '),
+      work_history: work,
+      education,
+      resume_excerpt: ctx.resumeText ? ctx.resumeText.slice(0, 4000) : ''
+    },
+    role_context: {
+      title: ctx.page?.title ?? '',
+      site: ctx.page?.siteName ?? '',
+      url: ctx.page?.url ?? ''
+    }
+  });
+}
+
+function parseEssayJson(raw: string): string {
+  try {
+    const j = JSON.parse(raw);
+    return typeof j.answer === 'string' ? j.answer.trim() : '';
+  } catch {
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (m) return parseEssayJson(m[0]);
+    return '';
+  }
+}
+
+export async function draftEssay(
+  settings: LlmSettings,
+  profile: Profile,
+  ctx: EssayContext
+): Promise<string> {
+  if (settings.provider === 'off' || !settings.apiKey) return '';
+  // Require at least some grounding; refuse to hallucinate.
+  const hasGrounding = (ctx.resumeText && ctx.resumeText.length > 100) || (profile.work?.length ?? 0) > 0;
+  if (!hasGrounding) return '';
+
+  const user = essayUserPrompt(profile, ctx);
+  let raw = '';
+  try {
+    if (settings.provider === 'openai') raw = await callOpenAI(settings, ESSAY_SYSTEM, user);
+    else if (settings.provider === 'anthropic') raw = await callAnthropic(settings, ESSAY_SYSTEM, user);
+    else if (settings.provider === 'gemini') raw = await callGemini(settings, ESSAY_SYSTEM, user);
+  } catch (e) {
+    console.warn('[FormAlive] essay drafter error:', e);
+    return '';
+  }
+  return parseEssayJson(raw);
+}
+
+/** Patterns that suggest a textarea expects a free-text application answer. */
+const ESSAY_LABEL_RE =
+  /tell[-_ ]?us[-_ ]?(about|why)|why[-_ ]?(do|are|would|should)[-_ ]?(you|we)|why[-_ ]?(this|our|us)|describe[-_ ]?(your|a)|what[-_ ]?(makes|excites)[-_ ]?you|cover[-_ ]?letter|elaborat|explain[-_ ]?(why|how|your)|motivation|your[-_ ]?(experience|background|story)|share[-_ ]?(your|a)|interest[-_ ]?in|good[-_ ]?fit|strengths?|weakness/i;
+
+export function looksLikeEssayQuestion(field: DetectedField): boolean {
+  if (field.type !== 'textarea') return false;
+  const blob = `${field.label} ${field.name} ${field.placeholder} ${field.ariaLabel}`.trim();
+  if (!blob) return false;
+  if (blob.length > 400) return false; // page-rendered legal text — skip
+  return ESSAY_LABEL_RE.test(blob);
+}

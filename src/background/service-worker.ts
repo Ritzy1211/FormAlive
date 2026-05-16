@@ -20,7 +20,7 @@ import {
   resolveProfileValue,
   upsertOverride
 } from '../shared/overrides';
-import { llmMatchField } from '../shared/llm';
+import { llmMatchField, draftEssay, looksLikeEssayQuestion } from '../shared/llm';
 import { buildContext, pickSnippetForField, renderSnippet } from '../shared/snippets';
 import { localizeProfile } from '../shared/locale';
 
@@ -267,6 +267,32 @@ async function handle(msg: RuntimeMessage): Promise<RuntimeResponse> {
           if (v) {
             filled.push({ fieldId: r.value.fieldId, value: v, confidence: r.value.confidence });
           }
+        }
+
+        // Essay drafter: for textareas that look like open-ended application
+        // questions ("Tell us about your experience", "Why are you a good
+        // fit"), draft a tailored answer using the user's resume + work
+        // history. We only do this when the user has opted-in to LLM use.
+        const essayCandidates = remaining.filter(
+          (f) => !filledIds.has(f.fieldId) && looksLikeEssayQuestion(f)
+        );
+        if (essayCandidates.length > 0) {
+          const essays = await Promise.allSettled(
+            essayCandidates.map((f) =>
+              draftEssay(llm, profile, {
+                question: f.label || f.placeholder || f.ariaLabel || f.name,
+                resumeText: profile.resumeText,
+                page: msg.pageContext
+              })
+            )
+          );
+          essayCandidates.forEach((f, i) => {
+            const r = essays[i];
+            if (r.status === 'fulfilled' && r.value && r.value.length > 20) {
+              filled.push({ fieldId: f.fieldId, value: r.value, confidence: 0.65 });
+              filledIds.add(f.fieldId);
+            }
+          });
         }
       }
 

@@ -92,10 +92,16 @@ export default function Popup() {
   if (!status.initialized) {
     return (
       <div className="p-4 space-y-3">
-        <h1 className="text-lg font-semibold">Welcome to FormAlive</h1>
+        <div>
+          <h1 className="text-lg font-semibold">Welcome to FormAlive</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Your personal job-application assistant.
+          </p>
+        </div>
         <p className="text-xs text-gray-600">
-          Create a master passphrase. It encrypts your data on this device. We can't recover it
-          if you forget it.
+          Create a master passphrase. It encrypts your résumé, contact details, and work
+          history on this device using AES-256. We can’t recover it if you forget it —
+          and nothing ever leaves your computer unless you explicitly enable AI help.
         </p>
         <input
           type="password"
@@ -126,7 +132,10 @@ export default function Popup() {
   if (!status.unlocked) {
     return (
       <div className="p-4 space-y-3">
-        <h1 className="text-lg font-semibold">Unlock FormAlive</h1>
+        <div>
+          <h1 className="text-lg font-semibold">Unlock FormAlive</h1>
+          <p className="text-xs text-gray-500 mt-0.5">🔒 Your application data is encrypted on this device.</p>
+        </div>
         <input
           type="password"
           placeholder="Master passphrase"
@@ -160,7 +169,10 @@ export default function Popup() {
   return (
     <div className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h1 className="text-base font-semibold">FormAlive</h1>
+        <div>
+          <h1 className="text-base font-semibold">FormAlive</h1>
+          <p className="text-[10px] text-gray-500 leading-tight">Personal job-application assistant</p>
+        </div>
         <button onClick={lock} className="text-xs text-gray-500 hover:text-gray-800">
           Lock
         </button>

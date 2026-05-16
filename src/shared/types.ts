@@ -139,6 +139,9 @@ export interface Profile {
   snippets?: Record<string, string>;
   /** Optional resume PDF stored as base64. Filename is preserved. */
   resume?: { filename: string; mime: string; dataB64: string };
+  /** Plain-text extract of the resume. Populated on upload. Used by the
+   *  AI essay drafter so it can ground answers in real experience. */
+  resumeText?: string;
   // ---- Optional sections (back-compat: older vaults may omit these) ----
   eligibility?: WorkEligibility;
   compensation?: Compensation;
