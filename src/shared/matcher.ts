@@ -81,21 +81,24 @@ export function matchField(field: DetectedField, profile: Profile): FilledValue 
     { test: /\bremote\b|hybrid|on[-_ ]?site|work[-_ ]?(model|arrangement|location)/, value: el?.remotePreference, confidence: 0.7 },
 
     // ---- Address ----
-    // "Where are you currently located?" / "Current location" — typeahead on
-    // many ATS (Ashby, Lever). Fill with "City, Country" so the dropdown can
-    // suggest a match; user picks from suggestions.
-    {
-      test: /currently[-_ ]?located|current[-_ ]?location|where[-_ ]?(are|do)[-_ ]?you[-_ ]?(currently[-_ ]?)?(located|live|reside)|\blocation\b(?![-_ ]?(code|id))/,
-      value: [b.city, b.country].filter(Boolean).join(', ') || b.city,
-      confidence: 0.85
-    },
-    // City and state MUST be checked before generic "address".
+    // City, state, postal, country are checked BEFORE the typeahead-location
+    // fallback so labels like "In which country do you currently reside?" or
+    // "Which city or region are you currently located in?" go to the right
+    // value instead of a combined "City, Country" string.
     { test: /\bcity\b|address-level2|\blocality\b|\btown\b/, value: b.city, confidence: 0.9 },
     { test: /\bstate\b|\bprovince\b|\bregion\b|prefecture|\boblast\b|\bcounty\b|address-level1/, value: b.state, confidence: 0.85 },
     { test: /postal[-_ ]?code|\bzip\b|zipcode|\bpostcode\b|\bpin[-_ ]?code\b|\beircode\b/, value: b.postalCode, confidence: 0.9 },
     { test: /\bcountry\b/, value: b.country, confidence: 0.85 },
     { test: /address[-_ ]?line[-_ ]?1|street[-_ ]?address|\baddress1\b|\baddress\b(?![-_ ]?(?:line[-_ ]?2|2|level))/, value: b.addressLine1, confidence: 0.85 },
     { test: /address[-_ ]?line[-_ ]?2|\baddress2\b|\bapt\b|apartment|\bsuite\b|\bunit\b/, value: b.addressLine2, confidence: 0.85 },
+    // Generic "where do you live / current location" typeahead — only when
+    // none of the explicit address fields above matched. Fill with
+    // "City, Country" so the dropdown can suggest the right entry.
+    {
+      test: /currently[-_ ]?located|current[-_ ]?location|where[-_ ]?(are|do)[-_ ]?you[-_ ]?(currently[-_ ]?)?(located|live|reside)|\blocation\b(?![-_ ]?(code|id))/,
+      value: [b.city, b.country].filter(Boolean).join(', ') || b.city,
+      confidence: 0.8
+    },
 
     // ---- Links ----
     { test: /linkedin/, value: l.linkedin, confidence: 0.95 },

@@ -182,4 +182,21 @@ describe('matcher', () => {
     const r = matchField(field({ label: 'Current location' }), p);
     expect(r?.value).toBe('Berlin');
   });
+
+  it('routes "In which country do you currently reside?" to country', () => {
+    p.basics.city = 'Lagos';
+    p.basics.country = 'Nigeria';
+    const r = matchField(field({ label: 'In which country do you currently reside?' }), p);
+    expect(r?.value).toBe('Nigeria');
+  });
+
+  it('routes "Which city or region are you currently located in?" to city', () => {
+    p.basics.city = 'Lagos';
+    p.basics.country = 'Nigeria';
+    const r = matchField(
+      field({ label: 'Which city or region are you currently located in?' }),
+      p
+    );
+    expect(r?.value).toBe('Lagos');
+  });
 });
