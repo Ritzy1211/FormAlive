@@ -570,25 +570,59 @@ document.addEventListener(
 // ONE click. We never fill without explicit user consent — privacy first.
 // ============================================================================
 
+// Hosts where forms are *almost always* job applications when present.
+// Note: linkedin.com / indeed.com / glassdoor.com are NOT in this list because
+// those sites also serve feeds, search results, login pages, etc. The strict
+// signal check below decides whether a form on those hosts is actually an
+// application.
 const KNOWN_ATS_HOSTS =
-  /myworkdayjobs\.com|workday\.com|greenhouse\.io|lever\.co|ashbyhq\.com|icims\.com|linkedin\.com|smartrecruiters\.com|bamboohr\.com|taleo\.net|jobvite\.com|indeed\.com|glassdoor\.com|brassring\.com|successfactors\.com|workable\.com|breezy\.hr|recruitee\.com/i;
+  /myworkdayjobs\.com|workday\.com|greenhouse\.io|lever\.co|ashbyhq\.com|icims\.com|smartrecruiters\.com|bamboohr\.com|taleo\.net|jobvite\.com|brassring\.com|successfactors\.com|workable\.com|breezy\.hr|recruitee\.com/i;
+
+// Signals that strongly suggest a job application (not a contact form,
+// newsletter signup, or login).
+const STRONG_APP_RE =
+  /\b(resume|cv|curriculum[-_ ]?vitae|cover[-_ ]?letter|linkedin[-_ ]?(url|profile)|github[-_ ]?(url|profile)|portfolio|sponsor|authoriz|right[-_ ]?to[-_ ]?work|visa|work[-_ ]?eligibility|notice[-_ ]?period|salary[-_ ]?expectation|years?[-_ ]?of[-_ ]?experience|why[-_ ]?(do|are|would|should)[-_ ]?you|tell[-_ ]?us[-_ ]?about|how[-_ ]?did[-_ ]?you[-_ ]?hear)\b/i;
+
+// Generic-contact signals — these alone are NOT enough (every newsletter has
+// email + name). Used only to disambiguate strong signals.
+const WEAK_CONTACT_RE =
+  /\b(first[-_ ]?name|last[-_ ]?name|given[-_ ]?name|family[-_ ]?name|full[-_ ]?name|email[-_ ]?address|phone[-_ ]?number|address[-_ ]?line)\b/i;
 
 function looksLikeApplicationForm(fields: DetectedField[]): boolean {
-  if (fields.length < 2) return false;
-  if (KNOWN_ATS_HOSTS.test(location.hostname)) return true;
+  // Real application forms have multiple fields. Single-field pages (search
+  // bars, newsletter signups) are excluded here.
+  if (fields.length < 3) return false;
+
+  // Hard exclusion: any password input means this is a login / signup, not
+  // an application form.
+  if (
+    document.querySelector('input[type="password"]:not([disabled]):not([hidden])')
+  ) {
+    return false;
+  }
+
   const blob = fields
-    .map((f) => `${f.label} ${f.name} ${f.id} ${f.autocomplete}`.toLowerCase())
+    .map((f) => `${f.label} ${f.name} ${f.id} ${f.autocomplete} ${f.placeholder}`.toLowerCase())
     .join(' | ');
-  const signals = [
-    /\bemail\b/.test(blob),
-    /\b(first|last|full|given|family)[-_ ]?name\b/.test(blob) || /\bname\b/.test(blob),
-    /\b(phone|tel|mobile)\b/.test(blob),
-    /\b(resume|cv|curriculum)\b/.test(blob),
-    /\b(linkedin|github|portfolio)\b/.test(blob),
-    /\b(cover[-_ ]?letter|experience|why[-_ ]?(you|us)|tell[-_ ]?us)\b/.test(blob),
-    /\b(sponsor|authoriz|right[-_ ]?to[-_ ]?work|visa)\b/.test(blob)
-  ].filter(Boolean).length;
-  return signals >= 2;
+
+  // Hard exclusion: a form whose dominant signal is "search" is not an
+  // application form.
+  if (/\b(search|find[-_ ]?(jobs?|roles?))\b/.test(blob) && fields.length <= 4) {
+    return false;
+  }
+
+  const strongMatches = (blob.match(STRONG_APP_RE) ?? []).length;
+  const weakMatches = (blob.match(WEAK_CONTACT_RE) ?? []).length;
+
+  // Known ATS host: just require *some* application context.
+  if (KNOWN_ATS_HOSTS.test(location.hostname)) {
+    return strongMatches >= 1 || (weakMatches >= 2 && fields.length >= 4);
+  }
+
+  // Generic site: require at least one strong job-application signal AND
+  // multiple contact fields. This is what filters out newsletter signups,
+  // contact-us forms, login pages, etc.
+  return strongMatches >= 1 && weakMatches >= 2 && fields.length >= 4;
 }
 
 const BANNER_ID = 'formalive-banner-host';
