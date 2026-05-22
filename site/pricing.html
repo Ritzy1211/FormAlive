@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Pricing — FormAlive</title>
+    <meta
+      name="description"
+      content="Simple plans for FormAlive. Free during beta — everyone gets every feature today. Pro and Teams unlock when we exit beta."
+    />
+    <meta name="theme-color" content="#0b0d14" />
+    <meta name="robots" content="index, follow" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+              display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif']
+            },
+            colors: {
+              ink: {
+                950: '#06070d',
+                900: '#0b0d14',
+                800: '#11141d',
+                700: '#1a1e2b'
+              },
+              brand: {
+                50: '#eef2ff',
+                400: '#7c8cff',
+                500: '#5b6cff',
+                600: '#3e4fff',
+                700: '#2c3bd6'
+              }
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="font-sans text-ink-900 antialiased">
+    <div class="grid-bg pointer-events-none fixed inset-0 -z-10"></div>
+
+    <!-- NAV -->
+    <header class="sticky top-3 z-40 mx-auto max-w-7xl px-4">
+      <nav class="glass flex items-center justify-between rounded-2xl px-4 py-2.5 sm:px-5">
+        <a href="index.html" class="flex items-center gap-2.5">
+          <span class="logo-mark grid h-8 w-8 place-items-center rounded-lg text-sm font-bold text-white">FA</span>
+          <span class="font-display text-[15px] font-bold tracking-tight">FormAlive</span>
+        </a>
+        <div class="hidden items-center gap-7 text-sm text-ink-700 md:flex">
+          <a href="index.html#features" class="hover:text-ink-900">Features</a>
+          <a href="index.html#how" class="hover:text-ink-900">How it works</a>
+          <a href="index.html#supported" class="hover:text-ink-900">Supported sites</a>
+          <a href="pricing.html" class="font-semibold text-ink-900">Pricing</a>
+          <a href="index.html#faq" class="hover:text-ink-900">FAQ</a>
+        </div>
+        <div class="flex items-center gap-2">
+          <a
+            href="https://github.com/Ritzy1211/FormAlive"
+            target="_blank"
+            rel="noopener"
+            class="hidden text-sm text-ink-700 hover:text-ink-900 sm:inline"
+          >GitHub</a>
+          <a href="index.html#install" class="btn-primary text-sm">Install Free</a>
+        </div>
+      </nav>
+    </header>
+
+    <!-- HERO -->
+    <section class="mx-auto max-w-5xl px-4 pt-16 pb-10 text-center sm:pt-24">
+      <span class="pill">Pricing</span>
+      <h1 class="mt-4 font-display text-4xl font-extrabold tracking-tight sm:text-6xl">
+        Simple, honest, <span class="gradient-text">human-friendly pricing.</span>
+      </h1>
+      <p class="mx-auto mt-5 max-w-2xl text-ink-700/80">
+        FormAlive is free for everyone while we're in beta. The plans below
+        are what unlocks when we go GA — they're listed now so you know
+        exactly what's coming. Early users get launch discounts and locked-in
+        pricing.
+      </p>
+
+      <!-- Beta banner -->
+      <div class="mx-auto mt-8 inline-flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-brand-400/30 bg-gradient-to-r from-brand-50 via-white to-fuchsia-50 px-5 py-3 text-sm shadow-[0_18px_40px_-30px_rgba(91,108,255,.6)]">
+        <span class="inline-flex items-center gap-2">
+          <span class="grid h-6 w-6 place-items-center rounded-full bg-gradient-to-r from-brand-500 to-fuchsia-500 text-[10px] font-bold uppercase text-white">β</span>
+          <strong class="text-ink-900">Beta is free for everyone.</strong>
+        </span>
+        <span class="text-ink-700/75">All features, all tiers, no card.</span>
+      </div>
+
+      <!-- Billing toggle -->
+      <div class="mt-9 inline-flex items-center rounded-full bg-white/70 p-1 ring-1 ring-ink-900/5 backdrop-blur" id="bill-toggle">
+        <button data-bill="monthly" class="bill-btn bill-active">Monthly</button>
+        <button data-bill="yearly" class="bill-btn">Yearly · save 20%</button>
+      </div>
+    </section>
+
+    <!-- PRICE CARDS -->
+    <section class="mx-auto max-w-7xl px-4 pb-10">
+      <div class="grid gap-5 md:grid-cols-3">
+        <!-- Starter -->
+        <div class="price-card">
+          <h3 class="font-display text-lg font-bold">Starter</h3>
+          <p class="mt-1 text-sm text-ink-700/70">For job seekers who want fast, private autofill.</p>
+          <div class="mt-4">
+            <span class="text-4xl font-extrabold">$0</span>
+            <span class="text-sm text-ink-700/70">/forever</span>
+          </div>
+          <ul class="price-list">
+            <li>Encrypted on-device vault</li>
+            <li>11+ ATS adapters + generic forms</li>
+            <li>Résumé auto-attach</li>
+            <li>Locale-aware masking</li>
+            <li>Consent banner on real forms</li>
+          </ul>
+          <a href="index.html#install" class="btn-ghost mt-6 w-full justify-center">Install free</a>
+          <div class="mt-3 text-center text-xs text-ink-700/60">Always free. No card.</div>
+        </div>
+
+        <!-- Pro -->
+        <div class="price-card price-card--featured">
+          <div class="absolute -top-3 right-5 rounded-full bg-gradient-to-r from-brand-500 to-fuchsia-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white">Recommended</div>
+          <h3 class="font-display text-lg font-bold">Pro</h3>
+          <p class="mt-1 text-sm text-ink-700/70">For active applicants who want AI drafts and multi-profile.</p>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span class="text-4xl font-extrabold" data-price-monthly="6" data-price-yearly="58">$6</span>
+            <span class="text-sm text-ink-700/70" data-period-monthly="/month" data-period-yearly="/year">/month</span>
+            <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-700">Free in beta</span>
+          </div>
+          <ul class="price-list">
+            <li>Everything in Starter</li>
+            <li><span class="font-semibold">AI cover-letter &amp; essay drafts</span> (your API key)</li>
+            <li>Unlimited profiles &amp; snippets</li>
+            <li>Cross-site memory &amp; per-site overrides</li>
+            <li>Priority email support</li>
+            <li>Early access to new ATS adapters</li>
+          </ul>
+          <a href="index.html#install" class="btn-primary mt-6 w-full justify-center">Get Pro free in beta</a>
+          <div class="mt-3 text-center text-xs text-ink-700/60">Locked-in pricing for early adopters.</div>
+        </div>
+
+        <!-- Teams -->
+        <div class="price-card">
+          <h3 class="font-display text-lg font-bold">Teams</h3>
+          <p class="mt-1 text-sm text-ink-700/70">For coaches &amp; career-services teams.</p>
+          <div class="mt-4">
+            <span class="text-4xl font-extrabold" data-price-monthly="14" data-price-yearly="134">$14</span>
+            <span class="text-sm text-ink-700/70" data-period-monthly="/seat / month" data-period-yearly="/seat / year">/seat / month</span>
+          </div>
+          <ul class="price-list">
+            <li>Everything in Pro</li>
+            <li>Shared snippet &amp; template library</li>
+            <li>Centralised billing</li>
+            <li>SSO (SAML / Google Workspace)</li>
+            <li>Audit log &amp; admin console</li>
+            <li>SLA-backed support</li>
+          </ul>
+          <a href="mailto:hi@formalive.app?subject=FormAlive%20Teams" class="btn-ghost mt-6 w-full justify-center">Talk to us</a>
+          <div class="mt-3 text-center text-xs text-ink-700/60">3-seat minimum. Annual or monthly.</div>
+        </div>
+      </div>
+
+      <p class="mt-6 text-center text-xs text-ink-700/55">
+        Prices in USD. Local taxes (VAT/GST) may apply at checkout when billing launches.
+      </p>
+    </section>
+
+    <!-- COMPARE TABLE -->
+    <section class="mx-auto max-w-5xl px-4 py-16">
+      <div class="reveal text-center">
+        <span class="pill">Compare</span>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          What's included in each plan
+        </h2>
+      </div>
+
+      <div class="legal-card mt-8 !p-0 overflow-hidden">
+        <table class="legal-table !m-0 !border-0">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th class="text-center">Starter</th>
+              <th class="text-center">Pro</th>
+              <th class="text-center">Teams</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Encrypted on-device vault</td><td class="text-center">✓</td><td class="text-center">✓</td><td class="text-center">✓</td></tr>
+            <tr><td>11+ ATS adapters + generic forms</td><td class="text-center">✓</td><td class="text-center">✓</td><td class="text-center">✓</td></tr>
+            <tr><td>Résumé auto-attach</td><td class="text-center">✓</td><td class="text-center">✓</td><td class="text-center">✓</td></tr>
+            <tr><td>Consent banner &amp; per-site overrides</td><td class="text-center">✓</td><td class="text-center">✓</td><td class="text-center">✓</td></tr>
+            <tr><td>Locale-aware phone/postal/date masking</td><td class="text-center">✓</td><td class="text-center">✓</td><td class="text-center">✓</td></tr>
+            <tr><td>AI cover-letter &amp; essay drafts</td><td class="text-center text-ink-700/40">—</td><td class="text-center">✓</td><td class="text-center">✓</td></tr>
+            <tr><td>Multiple profiles (e.g. roles, regions)</td><td class="text-center text-ink-700/40">1</td><td class="text-center">Unlimited</td><td class="text-center">Unlimited</td></tr>
+            <tr><td>Saved snippets library</td><td class="text-center text-ink-700/40">10</td><td class="text-center">Unlimited</td><td class="text-center">Shared, unlimited</td></tr>
+            <tr><td>Cross-site memory (learn from your edits)</td><td class="text-center text-ink-700/40">Basic</td><td class="text-center">Full</td><td class="text-center">Full</td></tr>
+            <tr><td>Priority email support</td><td class="text-center text-ink-700/40">—</td><td class="text-center">✓</td><td class="text-center">✓</td></tr>
+            <tr><td>SSO (SAML / Google Workspace)</td><td class="text-center text-ink-700/40">—</td><td class="text-center text-ink-700/40">—</td><td class="text-center">✓</td></tr>
+            <tr><td>Admin console &amp; audit log</td><td class="text-center text-ink-700/40">—</td><td class="text-center text-ink-700/40">—</td><td class="text-center">✓</td></tr>
+            <tr><td>Centralised billing</td><td class="text-center text-ink-700/40">—</td><td class="text-center text-ink-700/40">—</td><td class="text-center">✓</td></tr>
+            <tr><td>SLA-backed support</td><td class="text-center text-ink-700/40">—</td><td class="text-center text-ink-700/40">—</td><td class="text-center">✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PRICING FAQ -->
+    <section class="mx-auto max-w-4xl px-4 py-16">
+      <div class="reveal text-center">
+        <span class="pill">FAQ</span>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Pricing questions, <span class="gradient-text">answered.</span>
+        </h2>
+      </div>
+
+      <div class="mt-10 space-y-3">
+        <details class="faq" open>
+          <summary>Is FormAlive really free right now?</summary>
+          <div class="faq-body">
+            Yes. While we're in beta, every plan above runs at $0 and every
+            feature is unlocked. You don't need a card and you don't need an
+            account.
+          </div>
+        </details>
+        <details class="faq">
+          <summary>What happens when you exit beta?</summary>
+          <div class="faq-body">
+            Starter stays free, forever. Pro and Teams begin billing at the
+            prices shown above. We'll give beta users at least 30 days notice
+            and apply a launch discount that's locked in for as long as you
+            stay subscribed.
+          </div>
+        </details>
+        <details class="faq">
+          <summary>Do I need to pay for the AI cover-letter feature today?</summary>
+          <div class="faq-body">
+            No. AI drafting is unlocked for everyone in beta. You only ever
+            pay your AI provider (OpenAI, Anthropic, Gemini) for tokens you
+            use — FormAlive never proxies that traffic.
+          </div>
+        </details>
+        <details class="faq">
+          <summary>Can I cancel any time?</summary>
+          <div class="faq-body">
+            Yes. When billing launches, you can cancel from your account
+            page or by uninstalling the extension. There are no contracts
+            for Starter or Pro; Teams plans can be monthly or annual.
+          </div>
+        </details>
+        <details class="faq">
+          <summary>Do you offer student or non-profit discounts?</summary>
+          <div class="faq-body">
+            Yes. Email us at
+            <a href="mailto:hi@formalive.app" class="link">hi@formalive.app</a>
+            with proof of status and we'll set you up with a discounted Pro
+            seat. Job-seeker hardship discounts are also available — just ask.
+          </div>
+        </details>
+        <details class="faq">
+          <summary>Is there a refund policy?</summary>
+          <div class="faq-body">
+            When billing launches: 14-day no-questions refund for Pro, and
+            pro-rata refunds for Teams within the first 30 days. We'd rather
+            keep happy customers than unhappy ones.
+          </div>
+        </details>
+        <details class="faq">
+          <summary>What payment methods will you accept?</summary>
+          <div class="faq-body">
+            Major credit/debit cards via Stripe at launch, with Apple Pay,
+            Google Pay, and SEPA/iDEAL where supported. Teams customers can
+            request annual invoicing.
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="mx-auto max-w-7xl px-4 pb-24 pt-6">
+      <div class="cta-card relative overflow-hidden rounded-[28px] p-10 text-center sm:p-16">
+        <div aria-hidden="true" class="absolute -inset-1 -z-10 animate-grad-pan rounded-[28px] bg-[linear-gradient(110deg,#5b6cff,30%,#d65bff,60%,#22d3ee,90%,#5b6cff)] bg-[length:200%_100%] opacity-90 blur"></div>
+        <div aria-hidden="true" class="absolute inset-0 -z-10 rounded-[28px] bg-ink-900/85"></div>
+
+        <h2 class="font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+          Start free. Get Pro free in beta.
+        </h2>
+        <p class="mx-auto mt-4 max-w-xl text-white/75">
+          Install FormAlive today and unlock every feature — including AI
+          drafts — at no cost. Lock in early-adopter pricing when we launch.
+        </p>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <a class="btn-light text-base" href="index.html#install">
+            Add to Chrome — Free
+          </a>
+          <a class="btn-outline-light text-base" href="mailto:hi@formalive.app?subject=FormAlive%20Teams">
+            Talk to sales
+          </a>
+        </div>
+        <div class="mt-6 text-xs text-white/55">No account · No card · Encrypted on your device</div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-ink-950 text-white/70">
+      <div class="mx-auto max-w-7xl px-4 py-10">
+        <div class="flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
+          <div class="flex items-center gap-2">
+            <span class="logo-mark grid h-7 w-7 place-items-center rounded-lg text-xs font-bold text-white">FA</span>
+            <span class="font-display font-bold text-white">FormAlive</span>
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/55">
+            <a href="index.html" class="hover:text-white">Home</a>
+            <a href="pricing.html" class="hover:text-white">Pricing</a>
+            <a href="privacy.html" class="hover:text-white">Privacy</a>
+            <a href="cookies.html" class="hover:text-white">Cookies</a>
+            <a href="terms.html" class="hover:text-white">Terms</a>
+            <a href="mailto:hi@formalive.app" class="hover:text-white">Contact</a>
+          </div>
+          <div class="text-xs text-white/45">© 2026 FormAlive</div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./main.js"></script>
+    <script src="./cookie-banner.js"></script>
+  </body>
+</html>
