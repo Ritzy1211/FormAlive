@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Privacy Policy — FormAlive</title>
+    <meta
+      name="description"
+      content="How FormAlive handles your data. Short version: your profile and résumé stay encrypted on your device. We don't sell, share, or transmit your application data."
+    />
+    <meta name="theme-color" content="#0b0d14" />
+    <meta name="robots" content="index, follow" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="font-sans text-ink-900 antialiased">
+    <div class="grid-bg pointer-events-none fixed inset-0 -z-10"></div>
+
+    <!-- NAV -->
+    <header class="sticky top-3 z-40 mx-auto max-w-7xl px-4">
+      <nav class="glass flex items-center justify-between rounded-2xl px-4 py-2.5 sm:px-5">
+        <a href="index.html" class="flex items-center gap-2.5">
+          <span class="logo-mark grid h-8 w-8 place-items-center rounded-lg text-sm font-bold text-white">FA</span>
+          <span class="font-display text-[15px] font-bold tracking-tight">FormAlive</span>
+        </a>
+        <div class="hidden items-center gap-7 text-sm text-ink-700 md:flex">
+          <a href="index.html#features" class="hover:text-ink-900">Features</a>
+          <a href="index.html#how" class="hover:text-ink-900">How it works</a>
+          <a href="index.html#supported" class="hover:text-ink-900">Supported sites</a>
+          <a href="index.html#pricing" class="hover:text-ink-900">Pricing</a>
+          <a href="index.html#faq" class="hover:text-ink-900">FAQ</a>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="index.html#install" class="btn-primary text-sm">Install Free</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="legal-shell">
+      <span class="legal-eyebrow">Legal · Privacy</span>
+      <h1 class="legal-title">Privacy policy</h1>
+      <p class="legal-sub">
+        FormAlive is a job-application assistant that runs locally in your
+        browser. Your profile, résumé, and answers are encrypted on your device
+        and never sent to us. This page explains exactly what that means.
+      </p>
+      <p class="legal-meta">
+        <strong>Effective:</strong> May 22, 2026 · <strong>Last updated:</strong> May 22, 2026
+      </p>
+
+      <section class="legal-card">
+        <nav class="legal-toc" aria-label="On this page">
+          <a href="#summary">1. Summary</a>
+          <a href="#who">2. Who we are</a>
+          <a href="#data">3. Data we handle</a>
+          <a href="#storage">4. Where it's stored</a>
+          <a href="#ai">5. Optional AI features</a>
+          <a href="#third-parties">6. Third parties</a>
+          <a href="#website">7. This website</a>
+          <a href="#rights">8. Your rights</a>
+          <a href="#children">9. Children</a>
+          <a href="#security">10. Security</a>
+          <a href="#changes">11. Changes</a>
+          <a href="#contact">12. Contact</a>
+        </nav>
+
+        <article class="legal-prose">
+          <h2 id="summary">1. Summary (the honest one-pager)</h2>
+          <ul>
+            <li>FormAlive does <strong>not</strong> have a backend that stores your data. There is no FormAlive account.</li>
+            <li>Your profile, résumé, work history, snippets, and answers live in <strong>encrypted local storage</strong> inside the browser, protected by a passphrase only you know.</li>
+            <li>We do <strong>not</strong> sell, share, or transmit your application data to any third party.</li>
+            <li>The optional AI feature is <strong>off by default</strong>. If you turn it on, requests go directly from your browser to the AI provider <em>you</em> chose, using <em>your</em> API key. We never see them.</li>
+            <li>This marketing website uses no third-party analytics and no tracking cookies. See the <a href="cookies.html">Cookies notice</a>.</li>
+          </ul>
+
+          <h2 id="who">2. Who we are</h2>
+          <p>
+            In this policy, <strong>"FormAlive"</strong>, <strong>"we"</strong>, <strong>"us"</strong>,
+            and <strong>"our"</strong> refer to the makers of the FormAlive
+            browser extension and this website at
+            <a href="https://github.com/Ritzy1211/FormAlive">github.com/Ritzy1211/FormAlive</a>.
+            You can reach us at
+            <a href="mailto:hi@formalive.app">hi@formalive.app</a>.
+          </p>
+
+          <h2 id="data">3. Data we handle</h2>
+          <p>
+            For transparency, here is every category of data the extension
+            touches and where it lives.
+          </p>
+          <table class="legal-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Examples</th>
+                <th>Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Profile</td>
+                <td>Name, email, phone, address, work eligibility, links</td>
+                <td>Encrypted in your browser (<code>chrome.storage.local</code>)</td>
+              </tr>
+              <tr>
+                <td>Résumé</td>
+                <td>The PDF you upload, extracted text, work history</td>
+                <td>Encrypted in your browser</td>
+              </tr>
+              <tr>
+                <td>Snippets &amp; overrides</td>
+                <td>Saved answers, per-site corrections you've made</td>
+                <td>Encrypted in your browser</td>
+              </tr>
+              <tr>
+                <td>Settings</td>
+                <td>Locale, AI on/off, your AI provider &amp; API key</td>
+                <td>Encrypted in your browser</td>
+              </tr>
+              <tr>
+                <td>Per-site consent</td>
+                <td>"Don't ask here" preferences</td>
+                <td>Browser storage (not encrypted; no personal data)</td>
+              </tr>
+              <tr>
+                <td>Form context</td>
+                <td>Labels &amp; questions on the page being filled</td>
+                <td>Processed in memory only; never persisted by us</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            We do not collect IP addresses, device identifiers, usage
+            telemetry, crash reports, or product analytics.
+          </p>
+
+          <h2 id="storage">4. Where your data is stored</h2>
+          <p>
+            All FormAlive data is stored inside your browser profile on the
+            device you installed the extension on. The vault is encrypted with
+            AES-256-GCM using a key derived from your passphrase via
+            PBKDF2-SHA256 (600,000 iterations). The passphrase never leaves
+            your device, and we cannot recover it for you.
+          </p>
+          <p>
+            Uninstalling the extension removes the vault. Clearing your browser
+            data for the extension does the same. There is no copy on our
+            side because we have no server.
+          </p>
+
+          <h2 id="ai">5. Optional AI features</h2>
+          <p>
+            FormAlive can optionally draft cover letters and long-form essay
+            answers. This feature is <strong>off by default</strong>. When
+            enabled:
+          </p>
+          <ul>
+            <li>You choose the provider (e.g., OpenAI, Anthropic, Google Gemini) and supply your own API key.</li>
+            <li>Requests are sent <strong>directly</strong> from your browser to that provider over HTTPS. We are not in the path.</li>
+            <li>The request includes the question being answered and the minimum résumé/work-history context needed to produce a grounded answer.</li>
+            <li>Your provider's privacy policy applies to that traffic. Review it before enabling AI.</li>
+            <li>You can disable AI at any time from the extension's settings.</li>
+          </ul>
+
+          <h2 id="third-parties">6. Third parties</h2>
+          <p>
+            The extension does not send your data to any third party except, if
+            you turn it on, the AI provider you select (see §5). The job sites
+            you choose to fill (LinkedIn, Greenhouse, Lever, Workday, Ashby,
+            etc.) receive exactly the information you submit through their
+            forms — same as if you'd typed it. We are not affiliated with any
+            of those services.
+          </p>
+          <p>
+            This marketing website loads fonts from Google Fonts and the
+            Tailwind CSS runtime from a public CDN. Those providers may
+            receive standard request metadata (IP, user agent) inherent to
+            loading any resource over the internet. We do not pass them any
+            personal data and we do not place tracking cookies. See the
+            <a href="cookies.html">Cookies notice</a>.
+          </p>
+
+          <h2 id="website">7. This website</h2>
+          <p>
+            The site at formalive.app (and any GitHub Pages mirror) is a
+            static marketing page. It does not require an account, does not
+            run analytics, and does not place advertising cookies. The only
+            client-side storage is a single first-party preference recording
+            whether you've dismissed the cookie notice.
+          </p>
+
+          <h2 id="rights">8. Your rights</h2>
+          <p>
+            Because your data lives on your device and not in any database we
+            operate, your rights are exercised directly:
+          </p>
+          <ul>
+            <li><strong>Access &amp; portability:</strong> Export your vault from the extension's settings.</li>
+            <li><strong>Correction:</strong> Edit any field in the extension at any time.</li>
+            <li><strong>Erasure:</strong> Click "Reset vault" in the extension, or uninstall it.</li>
+          </ul>
+          <p>
+            If you live in the EEA, UK, Switzerland, California, or another
+            region with data-protection laws (GDPR, UK GDPR, CCPA/CPRA), the
+            same applies: we don't act as a controller of any database of your
+            data because no such database exists. If you have a specific
+            question or a regulator request, write to
+            <a href="mailto:hi@formalive.app">hi@formalive.app</a>.
+          </p>
+
+          <h2 id="children">9. Children</h2>
+          <p>
+            FormAlive is not directed at children under 16, and we don't
+            knowingly handle their data.
+          </p>
+
+          <h2 id="security">10. Security</h2>
+          <p>
+            We use modern, audited browser primitives (the Web Crypto API,
+            AES-256-GCM, PBKDF2-SHA256) and ship the extension's source code
+            publicly so anyone can verify the behavior described here. No
+            system is perfectly secure — choose a strong passphrase, keep
+            your device updated, and don't share your AI API keys.
+          </p>
+
+          <h2 id="changes">11. Changes to this policy</h2>
+          <p>
+            If we materially change how the extension handles data, we'll
+            update this page and bump the "Last updated" date above. For
+            small clarifications we'll just edit in place.
+          </p>
+
+          <h2 id="contact">12. Contact</h2>
+          <p>
+            Questions or concerns? Email
+            <a href="mailto:hi@formalive.app">hi@formalive.app</a>
+            or open an issue on
+            <a href="https://github.com/Ritzy1211/FormAlive/issues">GitHub</a>.
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="bg-ink-950 text-white/70">
+      <div class="mx-auto max-w-7xl px-4 py-10">
+        <div class="flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
+          <div class="flex items-center gap-2">
+            <span class="logo-mark grid h-7 w-7 place-items-center rounded-lg text-xs font-bold text-white">FA</span>
+            <span class="font-display font-bold text-white">FormAlive</span>
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/55">
+            <a href="index.html" class="hover:text-white">Home</a>
+            <a href="privacy.html" class="hover:text-white">Privacy</a>
+            <a href="cookies.html" class="hover:text-white">Cookies</a>
+            <a href="terms.html" class="hover:text-white">Terms</a>
+            <a href="mailto:hi@formalive.app" class="hover:text-white">Contact</a>
+          </div>
+          <div class="text-xs text-white/45">© 2026 FormAlive</div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./cookie-banner.js"></script>
+  </body>
+</html>

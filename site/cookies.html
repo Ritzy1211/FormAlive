@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Cookies Notice — FormAlive</title>
+    <meta
+      name="description"
+      content="What cookies and local storage FormAlive uses. Short version: no tracking cookies. One first-party preference for the cookie banner."
+    />
+    <meta name="theme-color" content="#0b0d14" />
+    <meta name="robots" content="index, follow" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="font-sans text-ink-900 antialiased">
+    <div class="grid-bg pointer-events-none fixed inset-0 -z-10"></div>
+
+    <header class="sticky top-3 z-40 mx-auto max-w-7xl px-4">
+      <nav class="glass flex items-center justify-between rounded-2xl px-4 py-2.5 sm:px-5">
+        <a href="index.html" class="flex items-center gap-2.5">
+          <span class="logo-mark grid h-8 w-8 place-items-center rounded-lg text-sm font-bold text-white">FA</span>
+          <span class="font-display text-[15px] font-bold tracking-tight">FormAlive</span>
+        </a>
+        <div class="hidden items-center gap-7 text-sm text-ink-700 md:flex">
+          <a href="index.html#features" class="hover:text-ink-900">Features</a>
+          <a href="index.html#how" class="hover:text-ink-900">How it works</a>
+          <a href="index.html#supported" class="hover:text-ink-900">Supported sites</a>
+          <a href="index.html#pricing" class="hover:text-ink-900">Pricing</a>
+          <a href="index.html#faq" class="hover:text-ink-900">FAQ</a>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="index.html#install" class="btn-primary text-sm">Install Free</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="legal-shell">
+      <span class="legal-eyebrow">Legal · Cookies</span>
+      <h1 class="legal-title">Cookies notice</h1>
+      <p class="legal-sub">
+        We don't believe in tracking cookies. This page lists every cookie and
+        every piece of local storage this site or the FormAlive extension
+        creates — so you can audit it for yourself.
+      </p>
+      <p class="legal-meta">
+        <strong>Effective:</strong> May 22, 2026 · <strong>Last updated:</strong> May 22, 2026
+      </p>
+
+      <section class="legal-card">
+        <nav class="legal-toc" aria-label="On this page">
+          <a href="#what">1. What's a cookie?</a>
+          <a href="#site">2. Cookies on this site</a>
+          <a href="#localstorage">3. Local storage on this site</a>
+          <a href="#extension">4. Inside the extension</a>
+          <a href="#third-party">5. Third-party requests</a>
+          <a href="#control">6. How to clear or block</a>
+          <a href="#changes">7. Changes</a>
+        </nav>
+
+        <article class="legal-prose">
+          <h2 id="what">1. What's a cookie?</h2>
+          <p>
+            A <strong>cookie</strong> is a small text file a website asks your
+            browser to store, usually for sign-in or tracking.
+            <strong>Local storage</strong> is similar but only readable by the
+            site that created it and never sent to a server automatically.
+            FormAlive uses neither for tracking.
+          </p>
+
+          <h2 id="site">2. Cookies on this site</h2>
+          <p>
+            <strong>None.</strong> formalive.app sets zero cookies. We have no
+            login, no shopping cart, no analytics, no ads.
+          </p>
+
+          <h2 id="localstorage">3. Local storage on this site</h2>
+          <table class="legal-table">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Purpose</th>
+                <th>Lifetime</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>formalive.cookie-consent</code></td>
+                <td>Remembers that you dismissed the cookie banner so it doesn't keep appearing.</td>
+                <td>Until you clear browser data</td>
+                <td>Strictly necessary (first party)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            That's the entire list. The value is <code>accept:&lt;timestamp&gt;</code>
+            or <code>decline:&lt;timestamp&gt;</code> — no identifiers, no
+            personal data. You can delete it any time from your browser's
+            site-data settings.
+          </p>
+
+          <h2 id="extension">4. Inside the FormAlive extension</h2>
+          <p>
+            The browser extension stores data inside the browser's extension
+            storage (<code>chrome.storage.local</code>), not in cookies. Every
+            field that contains personal information is encrypted with
+            AES-256-GCM under a passphrase only you know. See the
+            <a href="privacy.html">Privacy policy</a> for the full breakdown.
+          </p>
+
+          <h2 id="third-party">5. Third-party requests this site makes</h2>
+          <p>
+            We don't embed analytics or ad scripts, but two helper resources
+            load from public CDNs. They do not set tracking cookies on
+            formalive.app:
+          </p>
+          <table class="legal-table">
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>What it serves</th>
+                <th>Why</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Google Fonts (<code>fonts.googleapis.com</code>, <code>fonts.gstatic.com</code>)</td>
+                <td>Inter &amp; Plus Jakarta Sans</td>
+                <td>Typography</td>
+              </tr>
+              <tr>
+                <td>Tailwind CSS CDN (<code>cdn.tailwindcss.com</code>)</td>
+                <td>The Tailwind runtime</td>
+                <td>Styling without a build step</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            Loading any resource from a third party involves standard request
+            metadata (IP address, user agent). We don't pass them personal
+            data and they don't write cookies to formalive.app.
+          </p>
+
+          <h2 id="control">6. How to clear or block</h2>
+          <ul>
+            <li><strong>Clear our local storage:</strong> Browser settings → Privacy &amp; security → Site data → search "formalive" → Remove.</li>
+            <li><strong>Block all cookies for this site:</strong> Browser site settings → Cookies → Block.</li>
+            <li><strong>Reset the cookie banner:</strong> Click "Decline" or "Got it" — both dismiss it. To see it again, clear the key listed above.</li>
+          </ul>
+
+          <h2 id="changes">7. Changes</h2>
+          <p>
+            If we ever add a new cookie or storage key, we'll list it here
+            before it ships, and we'll update the "Last updated" date. We
+            won't quietly add tracking.
+          </p>
+
+          <hr />
+          <p>
+            Questions? Email
+            <a href="mailto:hi@formalive.app">hi@formalive.app</a>.
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="bg-ink-950 text-white/70">
+      <div class="mx-auto max-w-7xl px-4 py-10">
+        <div class="flex flex-col items-center justify-between gap-4 text-sm sm:flex-row">
+          <div class="flex items-center gap-2">
+            <span class="logo-mark grid h-7 w-7 place-items-center rounded-lg text-xs font-bold text-white">FA</span>
+            <span class="font-display font-bold text-white">FormAlive</span>
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/55">
+            <a href="index.html" class="hover:text-white">Home</a>
+            <a href="privacy.html" class="hover:text-white">Privacy</a>
+            <a href="cookies.html" class="hover:text-white">Cookies</a>
+            <a href="terms.html" class="hover:text-white">Terms</a>
+            <a href="mailto:hi@formalive.app" class="hover:text-white">Contact</a>
+          </div>
+          <div class="text-xs text-white/45">© 2026 FormAlive</div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./cookie-banner.js"></script>
+  </body>
+</html>
