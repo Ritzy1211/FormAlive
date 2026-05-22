@@ -172,6 +172,9 @@ export interface VaultContents {
   overrides?: import('./overrides').OverrideStore;
   /** Optional LLM settings (API key stored only in the encrypted vault). */
   llm?: LlmSettings;
+  /** Subscription tier. Defaults to { plan: 'free' }. During beta everyone
+   *  gets Pro features regardless (see shared/license.ts). */
+  license?: import('./license').License;
 }
 
 export interface LlmSettings {

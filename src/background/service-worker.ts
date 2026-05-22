@@ -256,10 +256,11 @@ async function handle(msg: RuntimeMessage): Promise<RuntimeResponse> {
 
       // LLM fallback for fields still unfilled.
       const llm = session.vault.llm;
+      const license = session.vault.license;
       if (llm && llm.provider !== 'off' && llm.apiKey) {
         const unmatched = remaining.filter((f) => !filledIds.has(f.fieldId));
         const results = await Promise.allSettled(
-          unmatched.map((f) => llmMatchField(llm, f, profile))
+          unmatched.map((f) => llmMatchField(llm, f, profile, license))
         );
         for (const r of results) {
           if (r.status !== 'fulfilled' || !r.value) continue;
@@ -279,11 +280,16 @@ async function handle(msg: RuntimeMessage): Promise<RuntimeResponse> {
         if (essayCandidates.length > 0) {
           const essays = await Promise.allSettled(
             essayCandidates.map((f) =>
-              draftEssay(llm, profile, {
-                question: f.label || f.placeholder || f.ariaLabel || f.name,
-                resumeText: profile.resumeText,
-                page: msg.pageContext
-              })
+              draftEssay(
+                llm,
+                profile,
+                {
+                  question: f.label || f.placeholder || f.ariaLabel || f.name,
+                  resumeText: profile.resumeText,
+                  page: msg.pageContext
+                },
+                license
+              )
             )
           );
           essayCandidates.forEach((f, i) => {

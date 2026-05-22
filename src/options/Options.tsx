@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import type { Profile, RuntimeResponse, VaultContents } from '../shared/types';
 import { parseResumeFile, type ResumeSuggestion } from '../shared/resume';
 import { emptyProfile } from '../shared/profile';
+import {
+  effectivePlan,
+  isPro,
+  limitsFor,
+  planLabel,
+  planTagline
+} from '../shared/license';
 
 async function send<T = unknown>(msg: unknown): Promise<RuntimeResponse & { data?: T }> {
   return chrome.runtime.sendMessage(msg);
@@ -180,6 +187,8 @@ export default function Options() {
   }
 
   const active = vault.profiles.find((p) => p.id === vault.activeProfileId)!;
+  const limits = limitsFor(vault.license);
+  const atProfileLimit = vault.profiles.length >= limits.maxProfiles;
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
@@ -196,13 +205,17 @@ export default function Options() {
         </div>
       </header>
 
+      <PlanBanner license={vault.license} />
+
       <section className="space-y-2">
         <label className="block text-sm font-medium">Profiles</label>
         <ProfileTabs
           profiles={vault.profiles}
           activeId={vault.activeProfileId}
           onSwitch={(id) => setVault({ ...vault, activeProfileId: id })}
+          canAdd={!atProfileLimit}
           onAdd={() => {
+            if (atProfileLimit) return;
             const np = emptyProfile(`Profile ${vault.profiles.length + 1}`);
             setVault({
               ...vault,
@@ -218,6 +231,12 @@ export default function Options() {
             setVault({ ...vault, profiles, activeProfileId });
           }}
         />
+        {atProfileLimit && (
+          <UpgradeNote>
+            Free plan is limited to 1 profile. Upgrade to Pro for unlimited profiles
+            (handy for separate roles, regions, or persona presets).
+          </UpgradeNote>
+        )}
         <label className="block text-xs text-gray-600 mt-2">Label for this profile</label>
         <input
           value={active.label}
@@ -515,20 +534,35 @@ export default function Options() {
         <SnippetsEditor
           snippets={active.snippets ?? {}}
           onChange={(snippets) => updateActive((p) => ({ ...p, snippets }))}
+          maxSnippets={limits.maxSnippets}
         />
       </section>
 
       <section className="space-y-2 border-t pt-4">
-        <h2 className="text-sm font-semibold">AI fallback (optional)</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold">AI essay drafting &amp; field matching</h2>
+          <span className="inline-flex items-center rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+            Pro
+          </span>
+        </div>
         <p className="text-xs text-gray-500">
           When rules can't match a field, FormAlive can ask an LLM you choose to pick the best
-          profile key. Only the field's metadata + your profile key names are sent — never your
-          actual values. Your API key is stored encrypted in your vault.
+          profile key, and draft tailored answers for essay-style questions. Only the field's
+          metadata + your profile key names are sent — never your raw values. Your API key is
+          stored encrypted in your vault.
         </p>
-        <LlmEditor
-          settings={vault.llm ?? { provider: 'off', apiKey: '', model: '' }}
-          onChange={(llm) => setVault({ ...vault, llm })}
-        />
+        {isPro(vault.license) ? (
+          <LlmEditor
+            settings={vault.llm ?? { provider: 'off', apiKey: '', model: '' }}
+            onChange={(llm) => setVault({ ...vault, llm })}
+          />
+        ) : (
+          <ProPaywall>
+            AI drafting is a Pro feature. Upgrade to enable cover-letter and essay
+            generation using your own API key. (You still pay only your AI provider —
+            FormAlive never proxies that traffic.)
+          </ProPaywall>
+        )}
       </section>
 
       <section className="border-t pt-4">
@@ -558,13 +592,16 @@ export default function Options() {
 
 function SnippetsEditor({
   snippets,
-  onChange
+  onChange,
+  maxSnippets = Infinity
 }: {
   snippets: Record<string, string>;
   onChange: (s: Record<string, string>) => void;
+  maxSnippets?: number;
 }) {
   const [newKey, setNewKey] = useState('');
   const keys = Object.keys(snippets);
+  const atLimit = keys.length >= maxSnippets;
   return (
     <div className="space-y-3">
       {keys.length === 0 && (
@@ -600,20 +637,32 @@ function SnippetsEditor({
           placeholder="snippet key (e.g. coverLetter)"
           value={newKey}
           onChange={(e) => setNewKey(e.target.value)}
-          className="flex-1 border rounded px-2 py-1 text-sm"
+          disabled={atLimit}
+          className="flex-1 border rounded px-2 py-1 text-sm disabled:bg-gray-50"
         />
         <button
           onClick={() => {
+            if (atLimit) return;
             const k = newKey.trim();
             if (!k || snippets[k] != null) return;
             onChange({ ...snippets, [k]: '' });
             setNewKey('');
           }}
-          className="text-xs bg-gray-800 text-white rounded px-3 py-1"
+          disabled={atLimit}
+          title={atLimit ? 'Upgrade to Pro for unlimited snippets' : undefined}
+          className={`text-xs text-white rounded px-3 py-1 ${
+            atLimit ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-800'
+          }`}
         >
           Add
         </button>
       </div>
+      {atLimit && Number.isFinite(maxSnippets) && (
+        <UpgradeNote>
+          You've hit the Free plan limit of {maxSnippets} snippets.
+          Upgrade to Pro for unlimited cover-letter, "why us", and custom answer templates.
+        </UpgradeNote>
+      )}
     </div>
   );
 }
@@ -689,6 +738,100 @@ function stripEmpty<T extends Record<string, unknown>>(obj: T): Partial<T> {
   return out as Partial<T>;
 }
 
+// ---------------------------------------------------------------------------
+// Plan banner & paywall components
+// ---------------------------------------------------------------------------
+
+const PRICING_URL = 'https://ritzy1211.github.io/FormAlive/pricing.html';
+
+function PlanBanner({ license }: { license?: import('../shared/license').License }) {
+  const pro = isPro(license);
+  const label = planLabel(license);
+  const tagline = planTagline(license);
+  const stored = license?.plan ?? 'free';
+  const showUpgrade = effectivePlan(license) === 'free' && stored === 'free';
+  return (
+    <div
+      className={`rounded-lg border p-3 flex items-center justify-between gap-3 ${
+        pro
+          ? 'border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-fuchsia-50'
+          : 'border-gray-200 bg-gray-50'
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${
+            pro
+              ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white'
+              : 'bg-gray-200 text-gray-700'
+          }`}
+        >
+          {label}
+        </span>
+        <p className="text-xs text-gray-700">{tagline}</p>
+      </div>
+      {showUpgrade ? (
+        <a
+          href={PRICING_URL}
+          target="_blank"
+          rel="noopener"
+          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 whitespace-nowrap"
+        >
+          Get Pro →
+        </a>
+      ) : (
+        <a
+          href={PRICING_URL}
+          target="_blank"
+          rel="noopener"
+          className="text-[11px] text-gray-500 hover:text-gray-700 whitespace-nowrap"
+        >
+          View plans
+        </a>
+      )}
+    </div>
+  );
+}
+
+function UpgradeNote({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+      <span className="font-semibold">Free plan limit:</span>
+      <span className="flex-1">{children}</span>
+      <a
+        href={PRICING_URL}
+        target="_blank"
+        rel="noopener"
+        className="font-semibold text-amber-900 underline whitespace-nowrap"
+      >
+        Get Pro →
+      </a>
+    </div>
+  );
+}
+
+function ProPaywall({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-dashed border-indigo-300 bg-indigo-50/40 p-4 text-sm">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="inline-flex items-center rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+          Pro
+        </span>
+        <span className="font-semibold text-indigo-900">Pro feature</span>
+      </div>
+      <p className="text-xs text-indigo-900/90 mb-3">{children}</p>
+      <a
+        href={PRICING_URL}
+        target="_blank"
+        rel="noopener"
+        className="inline-flex items-center gap-1 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5"
+      >
+        Upgrade to Pro
+      </a>
+    </div>
+  );
+}
+
 function LlmEditor({
   settings,
   onChange
@@ -747,13 +890,15 @@ function ProfileTabs({
   activeId,
   onSwitch,
   onAdd,
-  onDelete
+  onDelete,
+  canAdd = true
 }: {
   profiles: Profile[];
   activeId: string;
   onSwitch: (id: string) => void;
   onAdd: () => void;
   onDelete: (id: string) => void;
+  canAdd?: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-1">
@@ -788,7 +933,11 @@ function ProfileTabs({
       })}
       <button
         onClick={onAdd}
-        className="text-xs rounded px-2 py-1 border border-dashed hover:bg-gray-50"
+        disabled={!canAdd}
+        title={canAdd ? 'Add a new profile' : 'Upgrade to Pro for unlimited profiles'}
+        className={`text-xs rounded px-2 py-1 border border-dashed ${
+          canAdd ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+        }`}
       >
         + Add profile
       </button>

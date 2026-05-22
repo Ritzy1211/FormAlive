@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { RuntimeResponse, VaultContents } from '../shared/types';
+import { effectivePlan, isPro, planLabel } from '../shared/license';
 
 type Status = { initialized: boolean; unlocked: boolean };
 
@@ -177,6 +178,8 @@ export default function Popup() {
           Lock
         </button>
       </div>
+
+      <PlanRow license={vault?.license} />
       {vault && vault.profiles.length > 0 ? (
         <div className="space-y-1">
           <label className="text-xs text-gray-600">Active profile</label>
@@ -219,6 +222,37 @@ export default function Popup() {
         Debug: copy scan report
       </button>
       {msg && <p className="text-xs text-gray-500">{msg}</p>}
+    </div>
+  );
+}
+
+function PlanRow({ license }: { license?: import('../shared/license').License }) {
+  const pro = isPro(license);
+  const stored = license?.plan ?? 'free';
+  const label = planLabel(license);
+  const tone = pro
+    ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white'
+    : 'bg-gray-100 text-gray-700';
+  // Show "Get Pro" only when the user is genuinely on free (post-beta).
+  const showUpgrade = effectivePlan(license) === 'free' && stored === 'free';
+  return (
+    <div className="flex items-center justify-between rounded-md bg-gray-50/70 px-2 py-1.5 ring-1 ring-gray-200">
+      <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ${tone}`}>
+        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-90"></span>
+        Plan · {label}
+      </span>
+      {showUpgrade ? (
+        <a
+          href="https://ritzy1211.github.io/FormAlive/pricing.html"
+          target="_blank"
+          rel="noopener"
+          className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
+        >
+          Get Pro →
+        </a>
+      ) : (
+        <span className="text-[10px] text-gray-500">All features unlocked</span>
+      )}
     </div>
   );
 }

@@ -5,6 +5,8 @@
 // LLM never sees full profile values.
 
 import type { DetectedField, LlmSettings, Profile } from './types';
+import type { License } from './license';
+import { isPro } from './license';
 import { resolveProfileValue, type ProfileKey } from './overrides';
 
 export interface LlmMatch {
@@ -125,9 +127,12 @@ function parseLlmJson(raw: string): { key: string; confidence: number } | null {
 export async function llmMatchField(
   settings: LlmSettings,
   field: DetectedField,
-  profile: Profile
+  profile: Profile,
+  license?: License
 ): Promise<LlmMatch | null> {
   if (settings.provider === 'off' || !settings.apiKey) return null;
+  // AI features are gated to Pro/Teams (free during beta).
+  if (!isPro(license)) return null;
 
   const keys = profileKeyChoices(profile);
   const user = userPrompt(field, keys);
@@ -230,9 +235,11 @@ function parseEssayJson(raw: string): string {
 export async function draftEssay(
   settings: LlmSettings,
   profile: Profile,
-  ctx: EssayContext
+  ctx: EssayContext,
+  license?: License
 ): Promise<string> {
   if (settings.provider === 'off' || !settings.apiKey) return '';
+  if (!isPro(license)) return '';
   // Require at least some grounding; refuse to hallucinate.
   const hasGrounding = (ctx.resumeText && ctx.resumeText.length > 100) || (profile.work?.length ?? 0) > 0;
   if (!hasGrounding) return '';

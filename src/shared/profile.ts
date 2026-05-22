@@ -1,4 +1,5 @@
 import type { Profile, VaultContents } from './types';
+import { defaultLicense } from './license';
 
 export function newId(): string {
   return crypto.randomUUID();
@@ -94,7 +95,8 @@ export function emptyVault(): VaultContents {
   return {
     profiles: [p],
     activeProfileId: p.id,
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    license: defaultLicense()
   };
 }
 
@@ -122,5 +124,9 @@ export function normalizeProfile(p: Profile): Profile {
 }
 
 export function normalizeVault(v: VaultContents): VaultContents {
-  return { ...v, profiles: v.profiles.map(normalizeProfile) };
+  return {
+    ...v,
+    profiles: v.profiles.map(normalizeProfile),
+    license: v.license ?? defaultLicense()
+  };
 }
